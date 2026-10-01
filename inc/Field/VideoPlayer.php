@@ -141,7 +141,7 @@ class VideoPlayer
                         'fullscreen' => __('Fullscreen', 'html5-video-player')
                     ),
                     'default' => array('play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'download', 'fullscreen'),
-                    'desc' => __('download,pip controls will not work for youtube and vimeo', 'html5-video-player')
+                    'desc' => __('download & pip controls will not work for youtube and vimeo', 'html5-video-player')
                 ),
                 array(
                     'id' => 'h5vp_repeat_playerio',

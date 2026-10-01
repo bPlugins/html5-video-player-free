@@ -17,7 +17,14 @@ interface StyleProps {
 
 const Style = ({ styles = {}, uniqueId }: StyleProps) => {
   const ref = useRef<HTMLStyleElement>(null);
-  const safeUniqueId = useMemo(() => (uniqueId || '').replace(/[^A-Za-z0-9_-]/g, ''), [uniqueId]);
+  // A leading digit (or "-digit") is invalid in a CSS id selector (older players have ids like "480c07f8"), so escape it as a hex code point.
+  const safeUniqueId = useMemo(
+    () =>
+      (uniqueId || '')
+        .replace(/[^A-Za-z0-9_-]/g, '')
+        .replace(/^(-?)(\d)/, (_, dash, digit) => `${dash}\\3${digit} `),
+    [uniqueId]
+  );
 
   const rules = useMemo(() => {
     const result: string[] = [];

@@ -44,15 +44,15 @@ const useVideoSource = ({
     const [src, setSrc] = useState(() => source);
     const [videoSource, setVideoSource] = useState<VideoSourceType>(() => detectProvider(source));
 
-    // Re-decode when the raw source changes
-
-
-    // Re-detect provider only when no explicit provider is set
+    // Re-sync src when the raw source changes
     useEffect(() => {
-        if (!provider) {
-            setVideoSource(detectProvider(source));
-        }
+        setSrc(source);
     }, [source]);
+
+    // Re-detect provider when provider or source changes
+    useEffect(() => {
+        setVideoSource(detectProvider(source));
+    }, [source, provider]);
 
     return { src, setSrc, videoSource, setVideoSource };
 };

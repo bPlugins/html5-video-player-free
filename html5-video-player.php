@@ -3,7 +3,7 @@
  * Plugin Name: HTML5 Video Player – embed fast, responsive videos with ease
  * Description: You can easily integrate html5 Video player in your WordPress website using this plugin.
  * Plugin URI:  https://bplugins.com/html5-video-player/
- * Version:     2.13.0
+ * Version:     2.13.1
  * Author:      bPlugins
  * Author URI:  http://bplugins.com
  * Requires at least: 6.5
@@ -33,7 +33,7 @@ if (function_exists('h5vp_fs')) {
     define('H5VP_PLUGIN_PATH', plugin_dir_path(__FILE__));
     define('H5VP_PLUGIN_FILE_BASENAME', plugin_basename(__FILE__));
     define('H5VP_PLUGIN_DIR_BASENAME', plugin_basename(__DIR__));
-    define('H5VP_VER', defined('WP_DEBUG') && WP_DEBUG === true ? time() : '2.13.0');
+    define('H5VP_VER', defined('WP_DEBUG') && WP_DEBUG === true ? time() : '2.13.1');
 
     // Create a helper function for easy SDK access.
     function h5vp_fs()

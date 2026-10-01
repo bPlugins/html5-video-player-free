@@ -64,7 +64,7 @@ const BSettings = ({ attributes, setAttributes, clientId, name }: BSettingsProps
             if (draft[type]) {
               draft[type][key] = value[key];
             } else {
-              draft[type] = { [key]: value };
+              draft[type] = { [key]: value[key] };
             }
           } else {
             draft[key] = value[key];

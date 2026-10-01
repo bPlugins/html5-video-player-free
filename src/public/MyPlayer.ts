@@ -372,6 +372,22 @@ class MyPlayer extends EventEmitter {
       if (this.isBackend) {
         this.player.pause();
       }
+
+      // "Play one player at a time" setting — pause every other instance on the page.
+      if (this.local?.pauseOther) {
+        window.instance?.forEach((p: any) => {
+          if (p && p !== this.player && p.playing) {
+            p.pause();
+          }
+        });
+      }
+    });
+
+    // "Reset On End" setting — seek back to the start once playback finishes.
+    this.player?.on("ended", () => {
+      if (this.options?.resetOnEnd) {
+        this.player.currentTime = 0;
+      }
     });
 
     // Unmute toggle — bump volume to 40% when unmuting from zero

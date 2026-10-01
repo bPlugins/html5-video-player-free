@@ -2,7 +2,7 @@
 Contributors: bplugins, shehabulislam, freemius, abuhayat, farazi1
 Tags: html5 video player, mp4 player, plyr, video, video player
 Tested up to: 7.1
-Stable tag: 2.13.0
+Stable tag: 2.13.1
 Requires PHP: 7.4
 Requires at least: 6.5
 Donate link: https://www.buymeacoffee.com/abuhayat
@@ -201,7 +201,7 @@ Please report security bugs found in the source code of the HTML5 Video Player p
 == Source Code ==
 
 You can find the source code, report bugs, and contribute to the development of this plugin on our GitHub repository:
-[**HTML5 Video Player on GitHub**](https://github.com/bPlugins/html5-video-player-wp)
+[**HTML5 Video Player on GitHub**](https://github.com/bPlugins/html5-video-player-free)
 
 == Third-Party Libraries ==
 
@@ -253,6 +253,10 @@ When you save a video player whose source is a YouTube URL, the plugin sends the
 When you save a video player whose source is a Vimeo URL, the plugin sends the video ID to Vimeo's public oEmbed-style endpoint (`https://vimeo.com/api/v2/video/{id}.json`) to fetch the video's title, the same way as above. Vimeo Terms of Service: https://vimeo.com/terms
 
 == Changelog ==
+
+
+= 2.13.1 - 16 September, 2026 =
+* **Fix:** The Elementor widget did not appear in the Elementor editor.
 
 = 2.13.0 - 22 August, 2026 =
 * Added: Video Playlist block — simple list layout, auto-play next with a 5-second "Up Next" countdown, duration badges, custom thumbnails, and Library/YouTube/Vimeo sources

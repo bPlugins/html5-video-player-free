@@ -4,14 +4,9 @@ if (!defined('ABSPATH'))
 use H5VP\Elementor\VideoPlayer;
 use H5VP\Elementor\H5VPSelectFile;
 
-// 'Elementor_Addons' is the class name from Elementor's own widget-boilerplate
-// starter code, so it collides with any other plugin built from the same
-// template. Guard the declaration so loading alongside one doesn't fatal.
-if (class_exists('Elementor_Addons')) {
-    return;
-}
+if (!class_exists('H5VP_Free_Elementor_Addons', false)) {
 
-final class Elementor_Addons
+final class H5VP_Free_Elementor_Addons
 {
 	const VERSION = '1.0.0';
 	const MINIMUM_ELEMENTOR_VERSION = '2.0.0';
@@ -65,4 +60,6 @@ final class Elementor_Addons
 	}
 }
 
-Elementor_Addons::instance();
+H5VP_Free_Elementor_Addons::instance();
+
+}

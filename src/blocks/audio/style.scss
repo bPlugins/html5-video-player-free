@@ -186,7 +186,7 @@
   outline: none !important;
   padding: 0;
   margin: 0;
-  color: var(--h5vp-audio-text);
+  color: var(--h5vp-audio-text) !important;
   opacity: 0.75;
   cursor: pointer;
   border-radius: 50%;
@@ -195,10 +195,11 @@
   text-decoration: none;
   flex-shrink: 0;
 
-  &:hover {
+  &:hover,
+  &:focus,
+  &:visited {
     opacity: 1;
-    transform: scale(1.06);
-    color: var(--h5vp-audio-text);
+    color: var(--h5vp-audio-text) !important;
   }
 
   &:active {
@@ -214,6 +215,7 @@
   svg {
     width: 20px;
     height: 20px;
+    stroke: currentColor;
   }
 }
 
@@ -222,7 +224,7 @@
   width: var(--h5vp-play-btn);
   height: var(--h5vp-play-btn);
   background: var(--h5vp-audio-primary);
-  color: #ffffff;
+  color: #ffffff !important;
   opacity: 1;
 
   svg {
@@ -236,12 +238,12 @@
 .h5vp-btn-skip {
   width: var(--h5vp-skip-btn);
   height: var(--h5vp-skip-btn);
-  color: var(--h5vp-audio-text);
+  color: var(--h5vp-audio-text) !important;
   opacity: 0.75;
 
   &:hover {
     opacity: 1;
-    color: var(--h5vp-audio-text);
+    color: var(--h5vp-audio-text) !important;
   }
 
   svg {
@@ -254,7 +256,7 @@
     font-size: var(--h5vp-skip-badge);
     font-weight: 700;
     top: 10px;
-    color: var(--h5vp-audio-text);
+    color: var(--h5vp-audio-text) !important;
   }
 }
 
@@ -263,18 +265,21 @@
 .h5vp-btn-download {
   width: var(--h5vp-icon-btn);
   height: var(--h5vp-icon-btn);
-  color: var(--h5vp-audio-text);
+  color: var(--h5vp-audio-text) !important;
   opacity: 0.75;
 
-  &:hover {
+  &:hover,
+  &:focus,
+  &:visited {
     opacity: 1;
-    color: var(--h5vp-audio-text);
+    color: var(--h5vp-audio-text) !important;
   }
 
   svg {
     width: var(--h5vp-icon-svg);
     height: var(--h5vp-icon-svg);
     display: block;
+    stroke: currentColor;
   }
 }
 

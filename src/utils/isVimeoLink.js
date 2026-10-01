@@ -1,36 +1,29 @@
-function isVimeoLink(source) {
-  if (!source) return false;
-  // Regular expression pattern to match Vimeo video URLs
-  // const vimeoPattern = /^(https?:\/\/)?(www\.)?(player\.)?vimeo\.com\/(video\/)?(\d+)(\/[^\s]*)?$/;
-  // const id = source?.match(vimeoPattern)?.[5];
-  const id = getVimeoId(String(source));
-
-
-  if (id) {
-    return `https://player.vimeo.com/video/${id}`;
-    // https://vimeo.com/920314562
-  }
-
-  if (!isNaN(source)) {
-    return `https://player.vimeo.com/video/${source}`;
-  }
-  // return vimeoPattern.test(source);
-}
-
-export default isVimeoLink;
-
-
-
 export function getVimeoId(url) {
   if (!url) return null;
 
-  if (!isNaN(url)) {
-    return url;
+  const value = String(url).trim();
+  const cleanId = value.replace(/^https?:\/\//i, '');
+
+  if (/^\d+$/.test(cleanId)) {
+    return cleanId;
   }
 
   const regex =
-    /^(?:https?:\/\/)?(?:www\.)?(?:vimeo\.com\/(?:.*\/)?|player\.vimeo\.com\/video\/)(\d+)/;
+    /^(?:https?:\/\/)?(?:www\.)?(?:vimeo\.com\/(?:.*\/)?|player\.vimeo\.com\/video\/)(\d+)/i;
 
-  const match = url.match(regex);
+  const match = value.match(regex);
   return match ? match[1] : null;
 }
+
+function isVimeoLink(source) {
+  if (!source) return false;
+  const id = getVimeoId(source);
+
+  if (id) {
+    return `https://player.vimeo.com/video/${id}`;
+  }
+
+  return false;
+}
+
+export default isVimeoLink;

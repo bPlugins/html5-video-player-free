@@ -63,7 +63,16 @@ wp_enqueue_script('bplugins-plyrio');
 wp_enqueue_style('bplugins-plyrio');
 
 // Enqueue the HLS library only if some row is an .m3u8 stream.
-h5vp_maybe_enqueue_hls(wp_list_pluck($h5vp_videos, 'video_source'));
+$h5vp_all_sources = array();
+foreach ($h5vp_videos as $h5vp_v) {
+    if (!empty($h5vp_v['video_source'])) {
+        $h5vp_all_sources[] = $h5vp_v['video_source'];
+    }
+    if (!empty($h5vp_v['h5vp_video_source'])) {
+        $h5vp_all_sources[] = $h5vp_v['h5vp_video_source'];
+    }
+}
+h5vp_maybe_enqueue_hls($h5vp_all_sources);
 
 $h5vp_default_controls = array(
     'play-large',
