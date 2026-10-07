@@ -142,7 +142,7 @@ The **HTML5 Video Player** widget (`H5VPPlayer`) renders the same video block, s
 - **Settings & metaboxes:** Codestar Framework (`inc/Field/`)
 - **Backend:** PHP 7.4+, WordPress blocks with `render.php`
 - **Licensing & analytics:** bPlugins SDK (based on Freemius) via `api.bplugins.com`
-- **Tests:** Playwright end-to-end tests and performance scripts (`scripts/perf/`)
+- **Tests:** Playwright end-to-end tests (`tests/`)
 
 ---
 
@@ -174,7 +174,7 @@ src/                     Sources (TypeScript/React/SCSS)
   dashboard/             bPlugins admin dashboard (utils/data.js holds the dashboard changelog)
 public/                  Front-end static files: Plyr, hls.js, CSS, media/blank.mp4
 build/                   Compiled assets — generated, do not edit
-scripts/perf/            Performance and functional test scripts
+scripts/wp-cli.js        WP-CLI wrapper used by the i18n scripts
 languages/               Translations
 admin/, tinymce/         Admin assets, classic editor button
 ```
@@ -198,11 +198,6 @@ admin/, tinymce/         Admin assets, classic editor button
 | `npm run format` | Format with `wp-scripts format` |
 | `npm run i18n` | Generate `.pot`, `.json` and `.mo` files |
 | `npm test` | Playwright end-to-end tests (`test:ui`, `test:headed` variants) |
-| `npm run perf` | Lighthouse-style page audit: requests, JS, media, CLS, third-party hosts |
-| `npm run perf:slow` | Same audit on throttled network and CPU |
-| `npm run perf:test` | Functional checks: captions, lazy mount, keyboard, playlist, old cached markup, audio |
-
-> The perf scripts use the installed Google Chrome through `playwright-core` and expect the `perf-*` test pages on the local site.
 
 ### Data flow
 
@@ -225,7 +220,6 @@ admin/, tinymce/         Admin assets, classic editor button
 1. Bump the version in `html5-video-player.php` (plugin header **and** `H5VP_VER`), `readme.txt` (`Stable tag`), `package.json` and `package-lock.json`.
 2. Add the changelog to `readme.txt` and to `src/dashboard/utils/data.js`.
 3. `npm run build`, then check the zip in `zip/`.
-4. Run `npm run perf:test` against a production build.
 
 ---
 
