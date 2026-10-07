@@ -105,6 +105,7 @@ const VideoPlayer = ({
         {['self-hosted', 'amazons3'].includes(videoSource) && (
           <Video
             source={src}
+            captions={effectiveAttributes.subtitle}
             poster={poster ?? ''}
             autoPlay={autoplay}
             muted={muted}

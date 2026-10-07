@@ -1,3 +1,5 @@
+@import "./blocks/Components/Common/placeholder";
+
 .h5vp_playlist {
   /* Fallback only. render.php (front end) and Preview.tsx (editor) both
      override this with the site-wide Brand Color setting. */
@@ -266,4 +268,10 @@
   to {
     opacity: 1;
   }
+}
+
+/* Between the app mounting and the player inserting its <video>, the media host is empty for a moment;
+   hold its 16:9 box so the list below doesn't jump up and back (layout shift). */
+.h5vp_playlist .video__wrapper > div:empty {
+  aspect-ratio: 16 / 9;
 }

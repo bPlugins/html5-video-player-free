@@ -141,6 +141,8 @@ export interface PlayerOptions {
 }
 
 export interface VideoPlayerAttributes {
+    /** Set on the front end when the visitor pressed play on a YouTube/Vimeo thumbnail. */
+    playOnReady?: boolean;
     additionalCSS?: string;
     additionalID?: string;
     source: string;

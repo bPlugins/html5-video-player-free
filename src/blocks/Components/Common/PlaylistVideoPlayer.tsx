@@ -1,10 +1,11 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { PlaylistVideo, PlaylistRuntimeOptions } from "src/blocks/playlist/types";
 import MyPlayer from "src/public/MyPlayer";
 import isYoutubeURL from "../../../../../wp-utils/v1/isYoutubeURL";
 import isVimeoLink from "src/utils/isVimeoLink";
 import UpNextCountdown from "./playlist/UpNextCountdown";
 import { formatDuration, setCachedDuration } from "./playlist/useVideoDuration";
+import { isIOS } from "src/utils/isIOS";
 
 export interface PlaylistPlayerHandle {
   play: () => void;
@@ -25,7 +26,16 @@ interface PlaylistVideoPlayerProps {
   countdownSeconds?: number;
   onCancelUpNext?: () => void;
   onPlayNow?: () => void;
+  /** Visitor pressed play on the click-to-load stand-in. */
+  onRequestPlay?: () => void;
+  /** Thumbnail for the stand-in when the item has none of its own. */
+  placeholderThumb?: string;
 }
+
+const youtubeThumb = (embedUrl: string) => {
+  const id = embedUrl.match(/\/embed\/([\w-]{11})/)?.[1];
+  return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : "";
+};
 
 const DEFAULT_CONTROLS = [
   "play-large",
@@ -64,6 +74,8 @@ const PlaylistVideoPlayer = forwardRef<PlaylistPlayerHandle, PlaylistVideoPlayer
       countdownSeconds = 5,
       onCancelUpNext,
       onPlayNow,
+      onRequestPlay,
+      placeholderThumb = "",
     },
     ref
   ) {
@@ -94,11 +106,28 @@ const PlaylistVideoPlayer = forwardRef<PlaylistPlayerHandle, PlaylistVideoPlayer
       ? (isVimeoLink(rawSource || "") as string)
       : rawSource || "";
 
+    // A YouTube/Vimeo player pulls ~1 MB from their servers the moment it is built. Until the visitor
+    // asks for playback (stand-in click, a playlist row, autoplay) the first item shows a thumbnail
+    // stand-in instead; once playback has been asked for, every later item builds as before.
+    const isEmbed = resolvedProvider === "youtube" || resolvedProvider === "vimeo";
+    const [embedAllowed, setEmbedAllowed] = useState(shouldAutoPlay);
+    useEffect(() => {
+      if (shouldAutoPlay) setEmbedAllowed(true);
+    }, [shouldAutoPlay]);
+    // iPhone/iPad: an embed built after the tap can't use that tap any more (YouTube refuses to start,
+    // Vimeo starts muted), so there the player is built right away and the visitor's tap reaches it.
+    const showStandIn = isEmbed && !embedAllowed && !!rawSource && !isIOS();
+    const standInThumb = poster || placeholderThumb || (resolvedProvider === "youtube" ? youtubeThumb(videoSrc || "") : "");
+    const requestPlay = () => {
+      setEmbedAllowed(true);
+      onRequestPlay?.();
+    };
+
     // The build effect deliberately keeps these out of its dependency list — it
     // must not tear the player down because a callback identity or the autoplay
     // flag changed — so it reads them through a ref every render refreshes.
-    const latestRef = useRef({ video, options, poster, shouldAutoPlay, onPlay, onPause, onEnded, rawSource });
-    latestRef.current = { video, options, poster, shouldAutoPlay, onPlay, onPause, onEnded, rawSource };
+    const latestRef = useRef({ video, options, poster, shouldAutoPlay, onPlay, onPause, onEnded, rawSource, showStandIn, requestPlay });
+    latestRef.current = { video, options, poster, shouldAutoPlay, onPlay, onPause, onEnded, rawSource, showStandIn, requestPlay };
 
     // Caches the live player's duration under the *current* track's source URL.
     // rawSource must come through latestRef: the build effect's player event
@@ -120,6 +149,10 @@ const PlaylistVideoPlayer = forwardRef<PlaylistPlayerHandle, PlaylistVideoPlayer
       ref,
       () => ({
         play() {
+          if (!playerRef.current && latestRef.current.showStandIn) {
+            latestRef.current.requestPlay();
+            return;
+          }
           playerRef.current?.player?.play?.()?.catch?.(() => {});
         },
         pause() {
@@ -127,7 +160,10 @@ const PlaylistVideoPlayer = forwardRef<PlaylistPlayerHandle, PlaylistVideoPlayer
         },
         togglePlay() {
           const plyr = playerRef.current?.player;
-          if (!plyr) return;
+          if (!plyr) {
+            if (latestRef.current.showStandIn) latestRef.current.requestPlay();
+            return;
+          }
           if (plyr.playing) {
             plyr.pause();
           } else {
@@ -150,7 +186,7 @@ const PlaylistVideoPlayer = forwardRef<PlaylistPlayerHandle, PlaylistVideoPlayer
 
     useEffect(() => {
       const host = mediaHostRef.current;
-      if (!host || !rawSource) return;
+      if (!host || !rawSource || showStandIn) return;
 
       const { poster: currentPoster, options: opts, video: currentVideo } = latestRef.current;
 
@@ -266,7 +302,7 @@ const PlaylistVideoPlayer = forwardRef<PlaylistPlayerHandle, PlaylistVideoPlayer
           host.innerHTML = "";
         }
       };
-    }, [buildKey, uniqueId]);
+    }, [buildKey, uniqueId, showStandIn]);
 
     // In-place source swap for self-hosted items — the whole point is to leave
     // the Plyr instance and its container standing so the playlist does not
@@ -341,7 +377,26 @@ const PlaylistVideoPlayer = forwardRef<PlaylistPlayerHandle, PlaylistVideoPlayer
         className="video__top video__wrapper plyr_wrapper skin-default"
         style={{ position: "relative" }}
       >
-        <div ref={mediaHostRef} style={{ width: "100%", height: "100%" }} />
+        {showStandIn && (
+          // Same markup and classes as the server stand-in (h5vp_player_placeholder), so mounting doesn't flash.
+          <div
+            className="preload_poster h5vp-placeholder"
+            role="button"
+            tabIndex={0}
+            aria-label={video?.video_title ? `Play ${video.video_title}` : "Play video"}
+            onClick={requestPlay}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                requestPlay();
+              }
+            }}
+          >
+            {standInThumb && <img className="h5vp-placeholder-image" src={standInThumb} alt="" decoding="async" />}
+            <span className="h5vp-placeholder-play" aria-hidden="true" />
+          </div>
+        )}
+        <div ref={mediaHostRef} style={{ width: "100%", height: "100%", display: showStandIn ? "none" : undefined }} />
 
         {showUpNext && nextVideo && onCancelUpNext && onPlayNow && (
           <UpNextCountdown

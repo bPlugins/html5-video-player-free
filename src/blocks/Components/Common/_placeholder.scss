@@ -1,0 +1,74 @@
+/* Server-rendered stand-in shown until a player mounts (render.php -> h5vp_player_placeholder()):
+   on scroll-in for self-hosted media, on click for YouTube/Vimeo. Sized here as well as inline, so it
+   keeps its shape even if a filter strips the inline style. */
+.h5vp-placeholder {
+  display: block;
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: #000;
+  background-size: cover;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+
+  .h5vp-placeholder-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    margin: 0;
+    object-fit: cover;
+  }
+
+  .h5vp-placeholder-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 64px;
+    height: 64px;
+    border-radius: 100%;
+    transform: translate(-50%, -50%);
+    background: var(--plyr-video-control-background-hover, var(--plyr-color-main, #00b2ff));
+    opacity: 0.9;
+    transition: opacity 0.3s, transform 0.3s;
+
+    /* Drawn in CSS (not the inline SVG) so the icon survives HTML filters that strip <svg>. */
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 54%;
+      transform: translate(-50%, -50%);
+      border-style: solid;
+      border-width: 11px 0 11px 18px;
+      border-color: transparent transparent transparent #fff;
+    }
+
+    svg {
+      display: none;
+    }
+  }
+
+  &:hover .h5vp-placeholder-play,
+  &:focus-visible .h5vp-placeholder-play {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--plyr-color-main, #00b2ff);
+    outline-offset: 2px;
+  }
+}
+
+/* iPhone/iPad + YouTube (MyPlayer::letIosTapReachYouTube): YouTube only starts from a tap on its own
+   player, so until the first play nothing of Plyr's may cover the iframe. */
+.plyr.h5vp-tap-through .plyr__control--overlaid,
+.plyr.h5vp-tap-through .plyr__poster {
+  display: none !important;
+}

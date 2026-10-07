@@ -143,6 +143,35 @@ export const welcomeInfo = (adminUrl, editor = '') => ({
     },
     changelogs: [
         {
+            version: '2.14.0 - 7 Oct, 2026',
+            type: 'update',
+            list: [
+                '<strong>Improvement:</strong> Much faster pages: YouTube/Vimeo load only on play, players below the fold load on scroll, no layout shift',
+                '<strong>Improvement:</strong> Each video downloads once, scripts no longer block rendering, jQuery is no longer loaded on the front end',
+                '<strong>Improvement:</strong> Works with WP Rocket, Autoptimize and WP Super Cache',
+                '<strong>Improvement:</strong> Redesigned playback speed menu, "Copied!" feedback for shortcodes, settings remember the open tab',
+                '<strong>Fixed:</strong> YouTube on iPhone/iPad, captions staying on after CC off, YouTube live/ links, Vimeo and video ID input',
+                '<strong>Fixed:</strong> Single player playback, a PHP warning, playlist scrollbar and download button color'
+            ]
+        },
+        {
+            version: '2.13.1 - 16 Sep, 2026',
+            type: 'fix',
+            list: [
+                '<strong>Fixed:</strong> The Elementor widget did not appear in the Elementor editor.'
+            ]
+        },
+        {
+            version: '2.13.0 - 22 August, 2026',
+            type: 'new',
+            list: [
+                '<strong>Added:</strong> Video Playlist block and Audio Player block with four skins',
+                '<strong>Added:</strong> HLS (.m3u8) streaming and subtitle/caption (.vtt) support',
+                '<strong>Added:</strong> Player alignment, Preload option and inline playback on iOS',
+                '<strong>Fixed:</strong> The Elementor widget did not render a player in the editor preview'
+            ]
+        },
+        {
             version: '2.12.0 - 3 August, 2026',
             type: 'new',
             list: [
@@ -150,26 +179,20 @@ export const welcomeInfo = (adminUrl, editor = '') => ({
                 '<strong>Added:</strong> "Guided Setup" link in the dashboard to re-run it any time',
                 '<strong>Improvement:</strong> Site-wide settings changes now require the manage_options capability'
             ]
-        },
-        {
-            version: '2.11.3 - 14 June, 2026',
-            type: 'update',
-            list: [
-                '<strong>Improvement:</strong> Updated admin dashboard design',
-                '<strong>Improvement:</strong> Removed unused code, dead asset registrations, and leftover images',
-                '<strong>Improvement:</strong> Code quality and general maintenance'
-            ]
-        },
+        }
     ],
     changelogsLimit: 6,
     changelogsReadMoreLabel: 'View More Changelogs',
     proFeatures: [
-        'Watermark Support.',
-        'Chapters.',
-        'Password Protected.',
-        'Allow Inline Playback on iOS.',
-        'Autoplay when visible on screen.',
-        'Shortcode support to display posts anywhere.'
+        '6 Premium Player Skins (Modern, Floating Pill, Stacked & more).',
+        'Email Capture to grow your list (Mailchimp, MailerLite, ActiveCampaign, FluentCRM).',
+        'Video Analytics and Google Analytics (GA4) tracking.',
+        'Monetize your videos with Google VAST Ads.',
+        'Password Protection and User-Role Restrictions.',
+        'Dynamic Watermark to stop video piracy.',
+        'Popup Player, Sticky Player and Custom End Screen.',
+        'Chapters, Quality Switcher, DASH Streaming and Multiple Subtitles.',
+        'Advanced Playlists with 3 extra layouts and live search.'
     ]
 });
 

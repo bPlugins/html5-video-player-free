@@ -158,31 +158,76 @@ import isVimeoLink from "./utils/isVimeoLink";
       $(this).parent().find(".htooltip").text("Copy To Clipboard");
     });
 
-    $(document).on("click", ".h5vp_shortcode_copy_btn", function (this: HTMLElement, e: Event) {
+    // Shortcode copier: the button, its copy icon and the list-table tooltip all show the result for a moment.
+    const COPY_RESET_MS = 2000;
+    const CHECK_ICON = '<path d="M5 12.5l4.5 4.5L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';
+
+    const copyToClipboard = async (text: string): Promise<boolean> => {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          return true;
+        }
+      } catch {
+        // Permission denied or not focused — fall through to the legacy path.
+      }
+      const temp = document.createElement("textarea");
+      temp.value = text;
+      temp.setAttribute("readonly", "");
+      temp.style.position = "fixed";
+      temp.style.opacity = "0";
+      document.body.appendChild(temp);
+      temp.select();
+      let copied = false;
+      try {
+        copied = document.execCommand("copy");
+      } catch {
+        copied = false;
+      }
+      document.body.removeChild(temp);
+      return copied;
+    };
+
+    $(document).on("click", ".h5vp_shortcode_copy_btn", async function (this: HTMLElement, e: Event) {
       e.preventDefault();
 
-      const text = $(this).data("clipboard-text");
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(text);
-      } else {
-        const tempInput = document.createElement("input");
-        tempInput.value = text;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand("copy");
-        document.body.removeChild(tempInput);
+      const text = String($(this).data("clipboard-text") ?? "");
+      if (!text) return;
+
+      // List-table cell / edit-screen bar group the button with its icon; the Quick Player icon stands alone.
+      const $group = $(this).closest(".h5vp_front_shortcode, .shortcode_area");
+      const $scope = $group.length ? $group : $(this);
+      const $btn = $scope.is("button") ? $scope : $scope.find("button.h5vp_shortcode_copy_btn");
+      const $icon = $scope.is("svg") ? $scope : $scope.find("svg.h5vp_shortcode_copy_btn");
+      const $tip = $scope.find(".htooltip");
+
+      const copied = await copyToClipboard(text);
+      if (!copied) {
+        window.prompt("Press Ctrl+C to copy the shortcode:", text);
+        return;
       }
-      if ($(this).data("type") == "icon") {
-        $(this).css("width", "18px");
-        setTimeout(() => {
-          $(this).css("width", "22px");
-        }, 200);
-      } else {
-        $(this).text("Copied!");
-        setTimeout(() => {
-          $(this).text(text);
-        }, 2000);
+
+      clearTimeout($scope.data("h5vpCopyTimer"));
+      if ($scope.data("h5vpIcon") === undefined) {
+        $scope.data("h5vpIcon", $icon.html());
       }
+
+      // Keep the button from shrinking when its label switches to the shorter "Copied!".
+      $btn.css("min-width", $btn.outerWidth() + "px");
+      $btn.text("✓ Copied!");
+      $icon.html(CHECK_ICON);
+      $tip.text("Copied to clipboard!");
+      $scope.addClass("h5vp-copied");
+
+      $scope.data(
+        "h5vpCopyTimer",
+        setTimeout(() => {
+          $scope.removeClass("h5vp-copied");
+          $btn.text(String($btn.data("clipboard-text") ?? text));
+          $icon.html($scope.data("h5vpIcon"));
+          $tip.text("Copy To Clipboard");
+        }, COPY_RESET_MS)
+      );
     });
 
     // show/hide password in protected field

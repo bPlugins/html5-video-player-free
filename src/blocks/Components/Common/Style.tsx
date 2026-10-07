@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import camelToKebabCase from '../../../utils/camelToKebabCase';
 import { StylesMap } from '../../../interfaces/MyPlayerInterface';
 
@@ -47,7 +47,9 @@ const Style = ({ styles = {}, uniqueId }: StyleProps) => {
     return result;
   }, [styles, safeUniqueId]);
 
-  useEffect(() => {
+  // Layout effect, not a plain effect: the rules (width, radius…) must be in place before the first
+  // paint of the mounted player, or a narrower/aligned player flashes at full width for a frame (CLS).
+  useLayoutEffect(() => {
     const sheet = ref.current?.sheet;
     if (!sheet) return;
 

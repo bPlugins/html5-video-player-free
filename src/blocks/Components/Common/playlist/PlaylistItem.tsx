@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { __ } from "@wordpress/i18n";
 import { PlaylistVideo } from "src/blocks/playlist/types";
 import { useVideoDuration } from "./useVideoDuration";
@@ -22,10 +22,14 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
 }) => {
   const isLibrary = video.h5vp_video_provider === "library";
   const sourceUrl = isLibrary ? video.video_source : video.h5vp_video_source;
+  const itemRef = useRef<HTMLLIElement>(null);
+  // The active item is the one the player is loading, so it reports its own duration; the others
+  // are probed one at a time, only once they scroll into view.
   const duration = useVideoDuration(
     sourceUrl,
     video.h5vp_video_provider,
-    video.video_duration
+    video.video_duration,
+    { ref: itemRef, skip: isActive }
   );
 
   // Selecting the item that is already loaded cannot re-select anything — the
@@ -61,6 +65,7 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({
 
   return (
     <li
+      ref={itemRef}
       className={`h5vp_playlist_item ${isActive ? "active" : ""} ${
         showPauseIcon ? "playing" : ""
       }`}

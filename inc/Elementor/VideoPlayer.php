@@ -98,7 +98,7 @@ class VideoPlayer extends Widget_Base
 	 */
 	public function get_script_depends()
 	{
-		return ['h5vp-view', 'wp-util'];
+		return ['h5vp-view'];
 	}
 
 	/**

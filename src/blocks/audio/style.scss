@@ -631,3 +631,28 @@
     }
   }
 }
+
+/* Until the script mounts the player, hold each skin's height so the content below doesn't shift. */
+.h5vp_audio_player:empty {
+  min-height: 64px;
+
+  &.h5vp-audio-skin-compact {
+    min-height: 44px;
+  }
+
+  &.h5vp-audio-skin-minimal {
+    min-height: 62px;
+  }
+
+  @media (max-width: 480px) {
+    min-height: 56px;
+
+    &.h5vp-audio-skin-compact {
+      min-height: 42px;
+    }
+
+    &.h5vp-audio-skin-minimal {
+      min-height: 62px;
+    }
+  }
+}

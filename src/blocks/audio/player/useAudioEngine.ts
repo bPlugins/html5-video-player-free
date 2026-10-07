@@ -48,7 +48,8 @@ export const useAudioEngine = ({ source, autoplay, loop, preload = "metadata" }:
         }
     }, []);
 
-    // RAF loop for smooth progress updating during playback
+    // Progress updates during playback. Four a second is plenty for the time readout, and the bar
+    // eases between them in CSS; the previous per-frame loop re-rendered the whole player ~60x/s.
     useEffect(() => {
         if (!isPlaying) {
             return;
@@ -61,11 +62,11 @@ export const useAudioEngine = ({ source, autoplay, loop, preload = "metadata" }:
                 setCurrentTime(cur);
                 setProgress(clamp(cur / audio.duration));
             }
-            frameRef.current = requestAnimationFrame(tick);
         };
 
-        frameRef.current = requestAnimationFrame(tick);
-        return () => cancelAnimationFrame(frameRef.current);
+        tick();
+        frameRef.current = window.setInterval(tick, 250);
+        return () => window.clearInterval(frameRef.current);
     }, [isPlaying]);
 
     // Handle source changes

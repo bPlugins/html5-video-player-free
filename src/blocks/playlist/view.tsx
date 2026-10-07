@@ -7,6 +7,7 @@ import PlaylistVideoPlayer, {
 } from "src/blocks/Components/Common/PlaylistVideoPlayer";
 import PlaylistSimple from "src/blocks/Components/Common/playlist/PlaylistSimple";
 import "src/playlist.scss";
+import { playMounted, whenNearViewport } from "src/utils/lazyMount";
 
 // Support both React 18 createRoot and legacy render
 const renderRoot = (container: HTMLElement, element: React.ReactElement) => {
@@ -20,6 +21,7 @@ const renderRoot = (container: HTMLElement, element: React.ReactElement) => {
 interface PlaylistAppProps {
   data: PlaylistRuntimeData;
   nonce?: string;
+  startPlaying?: boolean;
 }
 
 // render.php emits CSS-cased keys ("max-width") because that payload is shared
@@ -38,8 +40,8 @@ const toReactStyle = (styles?: Record<string, any>): React.CSSProperties => {
   }, {});
 };
 
-const PlaylistApp: React.FC<PlaylistAppProps> = ({ data }) => {
-  const { videos = [], options, uniqueId, styles } = data;
+const PlaylistApp: React.FC<PlaylistAppProps> = ({ data, startPlaying = false }) => {
+  const { videos = [], options, uniqueId, styles, placeholderThumb } = data;
 
   const {
     currentVideoIndex,
@@ -54,7 +56,7 @@ const PlaylistApp: React.FC<PlaylistAppProps> = ({ data }) => {
     onVideoEnded,
     onVideoPlay,
     onVideoPause,
-  } = usePlaylist({ videos, options });
+  } = usePlaylist({ videos, options, startPlaying });
 
   // The playlist rows need to reach the live player to toggle playback; the
   // player owns the Plyr instance, so it exposes it through this handle.
@@ -82,6 +84,8 @@ const PlaylistApp: React.FC<PlaylistAppProps> = ({ data }) => {
           showUpNext={showUpNext}
           nextVideo={nextVideo}
           countdownSeconds={countdownSeconds}
+          placeholderThumb={currentVideoIndex === 0 ? placeholderThumb : ""}
+          onRequestPlay={() => selectVideo(currentVideoIndex, true)}
           onCancelUpNext={cancelUpNext}
           onPlayNow={() => {
             cancelUpNext();
@@ -103,21 +107,47 @@ const PlaylistApp: React.FC<PlaylistAppProps> = ({ data }) => {
   );
 };
 
+const mountPlaylist = (el: HTMLElement, startPlaying = false) => {
+  if (el.dataset.h5vpMounted || !el.dataset.attributes) return;
+
+  try {
+    const data: PlaylistRuntimeData = JSON.parse(el.dataset.attributes);
+    const nonce = el.dataset.nonce;
+
+    el.dataset.h5vpMounted = "true";
+    renderRoot(el, <PlaylistApp data={data} nonce={nonce} startPlaying={startPlaying} />);
+  } catch (err) {
+    console.error("Failed to mount HTML5 Video Player playlist:", err);
+  }
+};
+
+// render.php prints a static copy of the playlist (player placeholder + titles); the app replaces it
+// as it nears the viewport, or straight away when the placeholder is clicked.
 const mountPlaylists = () => {
-  const elements = document.querySelectorAll<HTMLElement>(".h5vp_playlist");
+  document.querySelectorAll<HTMLElement>(".h5vp_playlist").forEach((el) => {
+    if (el.dataset.h5vpMounted || el.dataset.h5vpPending || !el.dataset.attributes) return;
 
-  elements.forEach((el) => {
-    if (el.dataset.h5vpMounted || !el.dataset.attributes) return;
-
-    try {
-      const data: PlaylistRuntimeData = JSON.parse(el.dataset.attributes);
-      const nonce = el.dataset.nonce;
-
-      el.dataset.h5vpMounted = "true";
-      renderRoot(el, <PlaylistApp data={data} nonce={nonce} />);
-    } catch (err) {
-      console.error("Failed to mount HTML5 Video Player playlist:", err);
+    const placeholder = el.querySelector<HTMLElement>(".h5vp-placeholder");
+    // Markup from before this version has no placeholder: mount as before.
+    if (!placeholder) {
+      mountPlaylist(el);
+      return;
     }
+
+    el.dataset.h5vpPending = "true";
+    const playNow = (event?: Event) => {
+      event?.preventDefault();
+      if (el.dataset.h5vpMounted) {
+        playMounted(el);
+        return;
+      }
+      mountPlaylist(el, true);
+    };
+    placeholder.addEventListener("click", playNow, { once: true });
+    placeholder.addEventListener("keydown", (event: KeyboardEvent) => {
+      if (event.key === "Enter" || event.key === " ") playNow(event);
+    });
+    whenNearViewport(el, () => mountPlaylist(el));
   });
 };
 

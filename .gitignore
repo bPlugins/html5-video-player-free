@@ -14,6 +14,8 @@ languages/
 /screenshots
 /playwright
 **/*.mp4
+# Plyr's local blank video (replaces cdn.plyr.io) ships with the plugin.
+!public/media/blank.mp4
 **/*.webm
 **/*.mp3
 .DS_Store

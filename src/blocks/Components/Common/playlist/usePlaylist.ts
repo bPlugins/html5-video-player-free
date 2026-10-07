@@ -8,15 +8,17 @@ export const COUNTDOWN_SECONDS = 5;
 interface UsePlaylistProps {
   videos: PlaylistVideo[];
   options: PlaylistRuntimeOptions;
+  /** Start the first video as soon as the player is ready (the visitor pressed play before it mounted). */
+  startPlaying?: boolean;
 }
 
-export const usePlaylist = ({ videos, options }: UsePlaylistProps) => {
+export const usePlaylist = ({ videos, options, startPlaying = false }: UsePlaylistProps) => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isEnded, setIsEnded] = useState<boolean>(false);
   const [showUpNext, setShowUpNext] = useState<boolean>(false);
   const [countdownSeconds, setCountdownSeconds] = useState<number>(COUNTDOWN_SECONDS);
-  const [shouldAutoPlay, setShouldAutoPlay] = useState<boolean>(false);
+  const [shouldAutoPlay, setShouldAutoPlay] = useState<boolean>(startPlaying);
 
   const countdownTimerRef = useRef<any>(null);
 

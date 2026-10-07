@@ -10,9 +10,12 @@ class EnqueueAssets
 {
     protected static $_instance = null;
 
+    const METABOX_TAB_POST_TYPES = array('videoplayer');
+
     public function __construct()
     {
         add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssets']);
+        add_action('admin_enqueue_scripts', [$this, 'persistMetaboxTab'], 20);
     }
 
     public static function instance()
@@ -57,5 +60,43 @@ class EnqueueAssets
             'email' => get_option('admin_email'),
             'nonce' => wp_create_nonce('h5vp_admin'),
         ));
+    }
+
+    /**
+     * Keep the active Codestar metabox tab after Publish/Update reloads the page,
+     * instead of falling back to the first tab. Remembered per post + metabox in
+     * sessionStorage, so other players still open on the first tab.
+     * Hooked after CSF (priority 10) so the 'csf' handle is registered; the inline
+     * script prints right after CSF's main.js, so it runs once CSF has bound its tabs.
+     */
+    public function persistMetaboxTab()
+    {
+        $screen = get_current_screen();
+        if (!$screen || 'post' !== $screen->base || !in_array($screen->post_type, self::METABOX_TAB_POST_TYPES, true)) {
+            return;
+        }
+        if (!wp_script_is('csf', 'registered')) {
+            return;
+        }
+
+        $script = <<<'JS'
+jQuery(function ($) {
+    var postId = $('#post_ID').val();
+    if (!postId) return;
+    $('.csf-metabox .csf-nav-metabox').each(function () {
+        var $links = $(this).find('a');
+        var key = 'h5vp_csf_tab_' + postId + '_' + ($(this).closest('.postbox').attr('id') || '');
+        var saved = NaN;
+        try { saved = parseInt(window.sessionStorage.getItem(key), 10); } catch (e) {}
+        if (saved > 0 && saved < $links.length) {
+            $links.eq(saved).trigger('click');
+        }
+        $links.on('click', function () {
+            try { window.sessionStorage.setItem(key, String($links.index(this))); } catch (e) {}
+        });
+    });
+});
+JS;
+        wp_add_inline_script('csf', $script, 'after');
     }
 }

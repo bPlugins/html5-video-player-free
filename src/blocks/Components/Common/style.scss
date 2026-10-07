@@ -13,12 +13,16 @@
 
   .plyr {
     button.plyr__control {
-      &:focus {
+      // Plyr focuses the first item when a settings submenu opens; skip hovered and keyboard-focused
+      // buttons so that item keeps Plyr's hover/focus background instead of white text on nothing.
+      &:focus:not(:hover):not(:focus-visible) {
         background: none;
       }
     }
 
-    .plyr__captions {
+    // Only while captions are on: a plain `display: block` kept Plyr's caption box (and its last line)
+    // on screen after the CC button turned captions off.
+    &.plyr--captions-active .plyr__captions {
       display: block;
     }
   }
@@ -422,6 +426,54 @@
     top: calc(50% - 12px);
     left: calc(50% - 12px);
     position: absolute;
+  }
+}
+
+/* ======================================================== Pre-mount placeholder ======================================== */
+@import "./placeholder";
+
+/* Same horizontal placement the mounted .plyr_wrapper gets. */
+.html5_video_players.aligncenter .h5vp-placeholder,
+.html5_video_players[data-align="center"] .h5vp-placeholder {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.html5_video_players.alignright .h5vp-placeholder,
+.html5_video_players[data-align="right"] .h5vp-placeholder {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* ======================================================== Reserved loading box ======================================== */
+/* Held from render until the mounted player knows its size (src/public/reservedSpace.ts). */
+.html5_video_players.h5vp-reserving-space {
+  aspect-ratio: var(--h5vp-reserved-ratio, 16 / 9);
+
+  &.h5vp-reserving-fixed {
+    aspect-ratio: auto;
+    height: var(--h5vp-reserved-height);
+  }
+
+  .h5vp-placeholder {
+    height: 100%;
+  }
+
+  >.h5vp_player_temp,
+  .plyr_wrapper,
+  .plyr_wrapper>.plyr {
+    height: 100%;
+  }
+
+  /* Only self-hosted media collapses - height would break Plyr's padding-bottom embed ratio. */
+  .plyr--html5 .plyr__video-wrapper,
+  .plyr--html5 video,
+  >.h5vp_player_temp video.h5vp_player {
+    height: 100%;
+  }
+
+  video.h5vp_player {
+    object-fit: contain;
   }
 }
 

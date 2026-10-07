@@ -266,8 +266,15 @@
 
 .h5vp_front_shortcode {
   position: relative;
-  display: inline-block;
+  /* Flex keeps the copy icon vertically centred on the button. */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin: 0 auto;
+
+  svg.h5vp_shortcode_copy_btn {
+    flex-shrink: 0;
+  }
 
   .h5vp_shortcode_copy_btn {
     cursor: pointer;
@@ -361,6 +368,38 @@
 .h5vp_front_shortcode:hover .htooltip {
   visibility: visible;
   opacity: 1;
+}
+
+/* Copy feedback, toggled by the shortcode copier in admin.ts. */
+.h5vp_shortcode_copy_btn {
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+svg.h5vp_shortcode_copy_btn {
+  color: #000;
+}
+
+.h5vp-copied button.h5vp_shortcode_copy_btn,
+.h5vp-copied button.h5vp_shortcode_copy_btn:hover,
+.h5vp-copied button.h5vp_shortcode_copy_btn:focus {
+  background: #00a32a;
+  border-color: #00a32a;
+  color: #fff;
+}
+
+.h5vp-copied svg.h5vp_shortcode_copy_btn,
+svg.h5vp_shortcode_copy_btn.h5vp-copied {
+  color: #00a32a;
+}
+
+.h5vp_front_shortcode.h5vp-copied .htooltip {
+  visibility: visible;
+  opacity: 1;
+  background-color: #00a32a;
+}
+
+.h5vp_front_shortcode.h5vp-copied .htooltip::after {
+  border-color: #00a32a transparent transparent transparent;
 }
 
 .csf-field-spinner .ui-spinner-button {

@@ -2,7 +2,7 @@
 Contributors: bplugins, shehabulislam, freemius, abuhayat, farazi1
 Tags: html5 video player, mp4 player, plyr, video, video player
 Tested up to: 7.1
-Stable tag: 2.13.1
+Stable tag: 2.14.0
 Requires PHP: 7.4
 Requires at least: 6.5
 Donate link: https://www.buymeacoffee.com/abuhayat
@@ -38,6 +38,7 @@ Add players to posts, pages, or widgets using shortcodes or the Gutenberg block 
 - **Supports Multiple Formats:** Embed MP4, WebM, OGG, and MOV files.
 - **Preview for Paid Content:** Great for selling digital video files with previews.
 - **Lightweight & Compact:** Doesn't take up unnecessary space on your page.
+- **Fast by Default:** YouTube and Vimeo load only when played, players below the fold load as they scroll into view, and the page never jumps while a player loads.
 - **Custom CSS Support:** Fine-tune your player with custom styles.
 - **SEO Optimized:** Schema markup helps search engines understand and index your videos.
 - **Video Playlist Block:** Build a playlist of videos with a simple list layout, auto-play next with a 5-second "Up Next" countdown, custom thumbnails, and duration badges.
@@ -254,6 +255,27 @@ When you save a video player whose source is a Vimeo URL, the plugin sends the v
 
 == Changelog ==
 
+
+= 2.14.0 - 7 October, 2026 =
+* Improved: Much faster pages. YouTube and Vimeo players now show a lightweight thumbnail and load the full player only when the visitor presses play (mobile PageSpeed score 71 → 99 on a YouTube page)
+* Improved: Players further down the page load only when they are scrolled into view — a page with five videos now downloads about 0.5 MB on load instead of 17.8 MB
+* Improved: No more layout shift while players load (CLS 0). Space is reserved for videos, playlists and audio players before they appear
+* Improved: Each video file is downloaded once instead of up to three times, and the player no longer fetches a blank video from cdn.plyr.io
+* Improved: Player scripts no longer block the page from rendering, jQuery and Underscore are no longer loaded on the front end, and the HLS library loads only when an HLS video plays
+* Improved: Playlists load YouTube/Vimeo items only on play, and read video durations after the page has finished loading
+* Improved: The audio player uses far less CPU while playing
+* Improved: Works smoothly with caching and optimization plugins such as WP Rocket ("Delay JavaScript execution"), Autoptimize and WP Super Cache
+* Improved: Redesigned playback speed menu
+* Improved: A "Copied!" confirmation when you copy a player's shortcode
+* Improved: The admin settings page remembers the tab you were on
+* Fixed: On iPhone and iPad, YouTube videos did not start when tapped; they now also play inline instead of forcing fullscreen
+* Fixed: Captions stayed on screen after being turned off with the CC button
+* Fixed: YouTube `live/` links were rejected as invalid
+* Fixed: Entering a Vimeo link or a video ID did not work in some cases
+* Fixed: A playback issue in the single video player
+* Fixed: A PHP warning, and the playlist scrollbar styling
+* Fixed: The download button color
+* Fixed: A narrower, centered player briefly showed at full width while loading (Elementor)
 
 = 2.13.1 - 16 September, 2026 =
 * **Fix:** The Elementor widget did not appear in the Elementor editor.

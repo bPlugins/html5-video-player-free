@@ -46,7 +46,9 @@ const usePlayerLifecycle = ({
             playerRef.current?.destroy();
             playerRef.current = null;
         };
-    }, [options, poster, src, skin, JSON.stringify(subtitle)]);
+        // Compared by content: the editor hands down a fresh options object on every attribute change,
+        // which used to destroy and rebuild Plyr (and reload the video) for unrelated edits.
+    }, [JSON.stringify(options), poster, src, skin, JSON.stringify(subtitle)]);
 
 
 

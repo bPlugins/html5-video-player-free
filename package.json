@@ -1,6 +1,6 @@
 {
   "name": "html5-video-player",
-  "version": "2.13.0",
+  "version": "2.14.0",
   "description": "",
   "main": "src/player.js",
   "scripts": {
@@ -18,7 +18,10 @@
     "zip": "node -e \"const fs=require('fs');fs.mkdirSync('zip',{recursive:true});fs.rmSync('zip/html5-video-player.zip',{force:true})\" && %SystemRoot%\\System32\\tar.exe -a -c -f zip/html5-video-player.zip --exclude=*.log --exclude=__MACOSX --exclude=.DS_Store --exclude=.git --exclude=.github admin build img inc public languages tinymce vendor blocks.php elementor-widget.php html5-video-player.php readme.txt includes.php uninstall.php composer.json",
     "test": "npx playwright test",
     "test:ui": "npx playwright test --ui",
-    "test:headed": "npx playwright test --headed"
+    "test:headed": "npx playwright test --headed",
+    "perf": "node scripts/perf/audit.cjs",
+    "perf:slow": "node scripts/perf/audit.cjs throttle",
+    "perf:test": "node scripts/perf/functest.cjs"
   },
   "keywords": [],
   "author": "",

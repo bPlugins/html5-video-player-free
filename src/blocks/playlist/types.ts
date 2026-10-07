@@ -48,6 +48,8 @@ export interface PlaylistRuntimeData {
   playlistType: string;
   options: PlaylistRuntimeOptions;
   videos: PlaylistVideo[];
+  /** Thumbnail render.php resolved for the first item (Vimeo needs a server lookup), reused by the click-to-load stand-in. */
+  placeholderThumb?: string;
   styles: {
     h5vp_playlist_container: {
       width: string;

@@ -40,5 +40,6 @@ $h5vp_wrapper_attributes = get_block_wrapper_attributes();
 ?>
 
 <div <?php echo wp_kses_data($h5vp_wrapper_attributes); ?>>
-    <div class="h5vp_audio_player" data-attributes="<?php echo esc_attr(wp_json_encode($h5vp_attributes)); ?>"></div>
+    <?php // The skin class lets the stylesheet hold the player's height until the script mounts it (no layout shift). ?>
+    <div class="h5vp_audio_player h5vp-audio-skin-<?php echo esc_attr(sanitize_html_class($h5vp_attributes['skin'] ?? 'default', 'default')); ?>" data-attributes="<?php echo esc_attr(wp_json_encode($h5vp_attributes)); ?>"></div>
 </div>
