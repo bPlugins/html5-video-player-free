@@ -75,12 +75,13 @@ if (function_exists('h5vp_fs')) {
         $rel_path = dirname(H5VP_PLUGIN_FILE_BASENAME) . '/languages';
 
         // Load the current text domain first.
+        // phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound
         if (load_plugin_textdomain($domain, false, $rel_path)) {
             return;
         }
 
         // Fall back to legacy "h5vp" .mo files, loaded into the current domain.
-        $locale = apply_filters('plugin_locale', determine_locale(), $domain);
+        $locale = determine_locale();
         $legacy = 'h5vp-' . $locale . '.mo';
 
         load_textdomain($domain, WP_LANG_DIR . '/plugins/' . $legacy, $locale)
@@ -106,9 +107,9 @@ if (function_exists('h5vp_fs')) {
     /*-------------------------------------------------------------------------------*/
     require_once 'tinymce/h5vp-tinymce.php';
 
-    $bpem_bootstrap = H5VP_PLUGIN_PATH . 'vendor/bp-extension-manager/bootstrap.php';
-    if (file_exists($bpem_bootstrap)) {
-        require_once $bpem_bootstrap;
+    $h5vp_bpem_bootstrap = H5VP_PLUGIN_PATH . 'vendor/bp-extension-manager/bootstrap.php';
+    if (file_exists($h5vp_bpem_bootstrap)) {
+        require_once $h5vp_bpem_bootstrap;
     }
 
 
