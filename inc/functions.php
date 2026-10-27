@@ -20,6 +20,218 @@ if (!function_exists('h5vp_get_option')) {
     }
 }
 
+if (!function_exists('h5vp_sanitize_player_url')) {
+    /**
+     * Reject a player URL whose scheme is not http(s), e.g. javascript: or data:.
+     *
+     * Relative, protocol-relative and http(s) URLs come back unchanged, so stored
+     * values keep working exactly as before.
+     *
+     * @param mixed $url Raw URL from block attributes.
+     * @return string The URL, or '' when it must not reach the player.
+     */
+    function h5vp_sanitize_player_url($url)
+    {
+        if (!is_scalar($url)) {
+            return '';
+        }
+        $url = (string) $url;
+
+        // Check the URL the way a browser reads it: entities decoded, and
+        // whitespace/control characters inside the scheme ("java\tscript:") ignored.
+        $check = html_entity_decode($url, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $check = preg_replace('/[\x00-\x20\x7f]+/', '', $check);
+
+        if (preg_match('/^([a-z][a-z0-9+.\-]*):/i', $check, $matches) && !in_array(strtolower($matches[1]), array('http', 'https'), true)) {
+            return '';
+        }
+
+        return $url;
+    }
+}
+
+if (!function_exists('h5vp_sanitize_player_controls')) {
+    /**
+     * Keep only known Plyr control names, in their saved order.
+     *
+     * Plyr inserts a string `controls` value as raw HTML, so anything that is
+     * not a list of control names falls back to the default controls.
+     *
+     * @param mixed      $controls Raw controls value.
+     * @param array|null $fallback Used when $controls is not an array.
+     * @return array
+     */
+    function h5vp_sanitize_player_controls($controls, $fallback = null)
+    {
+        $known = array('play-large', 'restart', 'rewind', 'play', 'fast-forward', 'progress', 'current-time', 'duration', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'download', 'fullscreen');
+
+        if (!is_array($controls)) {
+            return null !== $fallback ? $fallback : array('play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'airplay', 'fullscreen');
+        }
+
+        $clean = array();
+        foreach ($controls as $control) {
+            if (is_string($control) && in_array($control, $known, true)) {
+                $clean[] = $control;
+            }
+        }
+
+        return $clean;
+    }
+}
+
+if (!function_exists('h5vp_sanitize_option_tree')) {
+    /**
+     * Sanitize a nested player option value: strings become plain text, other
+     * scalars are kept as they are.
+     *
+     * @param mixed $value Raw value.
+     * @param int   $depth Current nesting depth.
+     * @return mixed
+     */
+    function h5vp_sanitize_option_tree($value, $depth = 0)
+    {
+        if (is_string($value)) {
+            return sanitize_text_field($value);
+        }
+        if (null === $value || is_bool($value) || is_int($value) || is_float($value)) {
+            return $value;
+        }
+        if (!is_array($value) || $depth > 4) {
+            return null;
+        }
+
+        $clean = array();
+        foreach ($value as $key => $item) {
+            $clean[$key] = h5vp_sanitize_option_tree($item, $depth + 1);
+        }
+
+        return $clean;
+    }
+}
+
+if (!function_exists('h5vp_sanitize_player_options')) {
+    /**
+     * Rebuild the `options` block attribute (the Plyr configuration) from known keys.
+     *
+     * The attribute comes from post_content, which a contributor can edit
+     * directly, and several Plyr keys are script/HTML sinks: urls.*.sdk is loaded
+     * as a <script>, urls.download becomes a link, and a string `controls` or a
+     * marker label is inserted as HTML. Legitimate values pass through unchanged.
+     *
+     * @param mixed $options Raw options attribute.
+     * @return array
+     */
+    function h5vp_sanitize_player_options($options)
+    {
+        if (!is_array($options)) {
+            return array();
+        }
+
+        $allowed = array(
+            'controls', 'settings', 'loadSprite', 'autoplay', 'autopause', 'playsinline', 'seekTime', 'volume', 'muted',
+            'hideControls', 'resetOnEnd', 'clickToPlay', 'disableContextMenu', 'invertTime', 'toggleInvert', 'displayDuration',
+            'duration', 'tooltips', 'captions', 'ratio', 'storage', 'speed', 'loop', 'ads', 'urls', 'markers', 'preload',
+            'quality', 'fullscreen', 'keyboard', 'imported', 'autoplayNextVideo', 'showPrevNext', 'showSearch',
+        );
+
+        $clean = array();
+        foreach ($options as $key => $value) {
+            if (!in_array($key, $allowed, true)) {
+                continue;
+            }
+
+            switch ($key) {
+                case 'controls':
+                    $clean[$key] = h5vp_sanitize_player_controls($value);
+                    break;
+
+                case 'settings':
+                    $known_settings = array('captions', 'quality', 'speed', 'loop');
+                    $clean[$key] = is_array($value)
+                        ? array_values(array_filter($value, function ($setting) use ($known_settings) {
+                            return is_string($setting) && in_array($setting, $known_settings, true);
+                        }))
+                        : $known_settings;
+                    break;
+
+                case 'urls':
+                    // Only the download link is configurable; provider sdk/iframe/api URLs
+                    // always come from Plyr's own defaults.
+                    $clean[$key] = array();
+                    foreach ((array) $value as $url_key => $url_value) {
+                        if ('enabled' === $url_key) {
+                            $clean[$key][$url_key] = h5vp_sanitize_option_tree($url_value);
+                        } elseif ('download' === $url_key) {
+                            $download = h5vp_sanitize_player_url($url_value);
+                            if (null === $url_value) {
+                                $clean[$key][$url_key] = null;
+                            } elseif ('' !== $download || '' === $url_value) {
+                                $clean[$key][$url_key] = $download;
+                            }
+                        }
+                    }
+                    break;
+
+                case 'ads':
+                    $clean[$key] = array();
+                    foreach ((array) $value as $ads_key => $ads_value) {
+                        if ('tagUrl' === $ads_key) {
+                            $tag_url = h5vp_sanitize_player_url($ads_value);
+                            $clean[$key][$ads_key] = ('' !== $tag_url || '' === $ads_value) ? $tag_url : null;
+                        } else {
+                            $clean[$key][$ads_key] = h5vp_sanitize_option_tree($ads_value);
+                        }
+                    }
+                    break;
+
+                case 'markers':
+                    $clean[$key] = array();
+                    foreach ((array) $value as $marker_key => $marker_value) {
+                        if ('points' !== $marker_key) {
+                            $clean[$key][$marker_key] = h5vp_sanitize_option_tree($marker_value);
+                            continue;
+                        }
+                        // Plyr writes marker labels with insertAdjacentHTML: plain text only.
+                        $points = array();
+                        foreach ((array) $marker_value as $point) {
+                            if (!is_array($point)) {
+                                continue;
+                            }
+                            $clean_point = array();
+                            foreach ($point as $field => $field_value) {
+                                if (!is_array($field_value)) {
+                                    $clean_point[$field] = h5vp_sanitize_option_tree($field_value);
+                                }
+                            }
+                            $points[] = $clean_point;
+                        }
+                        $clean[$key][$marker_key] = $points;
+                    }
+                    break;
+
+                case 'speed':
+                    $clean[$key] = array();
+                    foreach ((array) $value as $speed_key => $speed_value) {
+                        if ('options' === $speed_key) {
+                            if (is_array($speed_value)) {
+                                $clean[$key][$speed_key] = array_values(array_filter($speed_value, 'is_numeric'));
+                            }
+                        } else {
+                            $clean[$key][$speed_key] = h5vp_sanitize_option_tree($speed_value);
+                        }
+                    }
+                    break;
+
+                default:
+                    $clean[$key] = h5vp_sanitize_option_tree($value);
+            }
+        }
+
+        return $clean;
+    }
+}
+
 if (!function_exists(('h5vp_process_block_attributes'))) {
     function h5vp_process_block_attributes($attributes)
     {
@@ -35,6 +247,12 @@ if (!function_exists(('h5vp_process_block_attributes'))) {
         }
         if (!empty($attributes['poster'])) {
             $attributes['poster'] = esc_url_raw((string) $attributes['poster']);
+        }
+
+        // 'options' becomes the Plyr configuration in the browser; rebuild it from
+        // known keys so no URL or HTML sink can be set from post_content.
+        if (isset($attributes['options'])) {
+            $attributes['options'] = h5vp_sanitize_player_options($attributes['options']);
         }
 
         if (!empty($attributes['subtitle']) && is_array($attributes['subtitle'])) {

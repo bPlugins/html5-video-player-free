@@ -20,7 +20,7 @@ foreach ($h5vp_attributes['videos'] as $h5vp_video) {
     // Attribute values come from post_content and can be any JSON shape
     // (hand-edited posts, imports); guard on is_scalar() rather than casting
     // blindly so a stray array/object doesn't warn or render as "Array".
-    foreach (array('video_source', 'h5vp_video_source', 'video_thumb') as $h5vp_url_key) {
+    foreach (array('video_source', 'h5vp_video_source', 'video_thumb', 'h5vp_custom_download_url') as $h5vp_url_key) {
         if (!empty($h5vp_video[$h5vp_url_key]) && is_scalar($h5vp_video[$h5vp_url_key])) {
             $h5vp_video[$h5vp_url_key] = esc_url_raw((string) $h5vp_video[$h5vp_url_key]);
         } else {
@@ -80,7 +80,8 @@ $h5vp_data = array(
     'uniqueId' => $h5vp_unique_id,
     'playlistType' => isset($h5vp_attributes['playlistType']) ? $h5vp_attributes['playlistType'] : 'simplelist',
     'options' => array(
-        'controls' => isset($h5vp_attributes['controls']) ? $h5vp_attributes['controls'] : $h5vp_default_controls,
+        // Unknown names are dropped: Plyr would insert a string value as raw HTML.
+        'controls' => isset($h5vp_attributes['controls']) ? h5vp_sanitize_player_controls($h5vp_attributes['controls'], $h5vp_default_controls) : $h5vp_default_controls,
         'muted' => false,
         'seekTime' => 10,
         'hideControls' => true,

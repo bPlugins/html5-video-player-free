@@ -1,15 +1,15 @@
 {
   "name": "html5-video-player",
-  "version": "2.14.0",
+  "version": "2.14.1",
   "description": "",
   "main": "src/player.js",
   "scripts": {
+    "start": "wp-scripts start --webpack-copy-php",
     "packages-update": "wp-scripts packages-update",
     "lint": "eslint src",
     "lint:css": "wp-scripts lint-style",
     "lint:js": "wp-scripts lint-js",
     "format": "wp-scripts format",
-    "start": "wp-scripts start --webpack-copy-php",
     "build": "wp-scripts build --webpack-copy-php && npm run i18n && npm run zip",
     "i18n-pot": "node scripts/wp-cli.js i18n make-pot . languages/html5-video-player.pot --exclude=src && node -e \"require('fs').copyFileSync('languages/html5-video-player.pot','languages/html5-video-player-en_US.po')\"",
     "i18n-json": "node scripts/wp-cli.js i18n make-json languages/ --no-purge",

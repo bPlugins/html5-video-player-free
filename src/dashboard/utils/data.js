@@ -143,6 +143,13 @@ export const welcomeInfo = (adminUrl, editor = '') => ({
     },
     changelogs: [
         {
+            version: '2.14.1 - 27 Oct, 2026',
+            type: 'fix',
+            list: [
+                '<strong>Fixed:</strong> Security: player settings saved in a block (download link, ad tag URL, controls, chapter labels) can no longer load outside scripts or run code'
+            ]
+        },
+        {
             version: '2.14.0 - 14 Oct, 2026',
             type: 'update',
             list: [

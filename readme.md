@@ -6,7 +6,7 @@
 [![Tested up to](https://img.shields.io/badge/Tested%20up%20to-7.1-blue.svg?style=flat-square&logo=wordpress)](./readme.txt)
 [![PHP](https://img.shields.io/badge/PHP-7.4+-777bb4.svg?style=flat-square&logo=php)](./readme.txt)
 [![License](https://img.shields.io/badge/License-GPLv2-green.svg?style=flat-square)](./readme.txt)
-[![Version](https://img.shields.io/badge/Version-2.14.0-blue.svg?style=flat-square)](./readme.txt)
+[![Version](https://img.shields.io/badge/Version-2.14.1-blue.svg?style=flat-square)](./readme.txt)
 
 **HTML5 Video Player** embeds MP4, WebM, OGG, HLS, YouTube and Vimeo videos in one consistent, customizable player built on [Plyr](https://plyr.io/). Add players with Gutenberg blocks, shortcodes, the classic editor or Elementor — no code required. Trusted by 30,000+ websites.
 
