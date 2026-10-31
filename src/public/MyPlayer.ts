@@ -3,7 +3,7 @@ import { produce } from "immer";
 import { EventEmitter } from "bp-utils";
 import { Features, QualityItem, CaptionItem, PlayerConstructorOptions, DeferredEvent, SourceInfo, TrackInfo } from "src/interfaces/MyPlayerInterface";
 import { isIOS } from "src/utils/isIOS";
-import { safeUrl, sanitizePlayerOptions } from "src/utils/playerSecurity";
+import { plainText, safeUrl, sanitizePlayerOptions } from "src/utils/playerSecurity";
 
 
 // ────────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ export const buildCaptionTracks = (captions: CaptionItem[] | null | undefined): 
   return captions
     .map((item, index) => {
       if (!item || !item.caption_file) return null;
-      const labelRaw = (item.label || "English/en").trim();
+      const labelRaw = String(plainText(item.label || "English/en")).trim();
       const parts = labelRaw.split("/");
       const label = parts[0]?.trim() || "English";
       const srclang = parts[1]?.trim() || (label.length === 2 ? label.toLowerCase() : "en");

@@ -146,7 +146,9 @@ export const welcomeInfo = (adminUrl, editor = '') => ({
             version: '2.14.2 - 31 Oct, 2026',
             type: 'fix',
             list: [
-                '<strong>Fixed:</strong> Security: player settings saved in a block are now also checked in the block editor and when a post is saved'
+                '<strong>Fixed:</strong> Security: player settings saved in a block are now also checked in the block editor and when a post is saved',
+                '<strong>Fixed:</strong> Security: subtitle labels are now plain text in the captions menu; hardened menu labels and custom styles',
+                '<strong>Update:</strong> Freemius SDK updated to 2.13.5'
             ]
         },
         {

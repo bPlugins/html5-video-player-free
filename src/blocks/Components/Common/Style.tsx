@@ -1,5 +1,6 @@
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import camelToKebabCase from '../../../utils/camelToKebabCase';
+import { cssValue, cssSelector } from '../../../utils/cssValue';
 import { StylesMap } from '../../../interfaces/MyPlayerInterface';
 
 // ────────────────────────────────────────────────────────────────
@@ -35,11 +36,16 @@ const Style = ({ styles = {}, uniqueId }: StyleProps) => {
         if (typeof value !== 'object') continue;
 
         const declarations = Object.entries(value)
-          .map(([prop, val]) => `${camelToKebabCase(prop)}: ${val};`)
+          .map(([prop, val]) => [camelToKebabCase(prop).replace(/[^a-zA-Z0-9-]/g, ''), val])
+          .filter(([prop]) => prop)
+          .map(([prop, val]) => `${prop}: ${cssValue(val)};`)
           .join(' ');
 
-        const prefix = ['.', '#'].includes(key[0]) ? '' : '.';
-        result.push(`#${safeUniqueId} ${prefix}${key}{${declarations}}`);
+        const selector = cssSelector(key);
+        if (!selector) continue;
+
+        const prefix = ['.', '#'].includes(selector[0]) ? '' : '.';
+        result.push(`#${safeUniqueId} ${prefix}${selector}{${declarations}}`);
       }
     }
 

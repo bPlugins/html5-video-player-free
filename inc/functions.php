@@ -233,6 +233,57 @@ if (!function_exists('h5vp_sanitize_player_options')) {
     }
 }
 
+if (!function_exists('h5vp_sanitize_playlist_videos')) {
+    /**
+     * Sanitize the videos of a playlist (block attribute, playlist post or shortcode data).
+     *
+     * URLs keep only safe schemes and subtitle labels become plain text (Plyr writes them
+     * into its captions menu as HTML). Legitimate values come back unchanged.
+     *
+     * @param mixed $videos Raw videos list.
+     * @return mixed
+     */
+    function h5vp_sanitize_playlist_videos($videos)
+    {
+        if (!is_array($videos)) {
+            return $videos;
+        }
+
+        foreach ($videos as $index => $video) {
+            if (!is_array($video)) {
+                continue;
+            }
+            foreach (array('video_source', 'h5vp_video_source', 'video_thumb', 'h5vp_custom_download_url') as $url_key) {
+                if (isset($video[$url_key])) {
+                    $videos[$index][$url_key] = h5vp_sanitize_player_url($video[$url_key]);
+                }
+            }
+            if (!empty($video['h5vp_subtitle_playerio']) && is_array($video['h5vp_subtitle_playerio'])) {
+                foreach ($video['h5vp_subtitle_playerio'] as $sub_index => $sub) {
+                    if (!is_array($sub)) {
+                        continue;
+                    }
+                    if (isset($sub['caption_file'])) {
+                        $videos[$index]['h5vp_subtitle_playerio'][$sub_index]['caption_file'] = h5vp_sanitize_player_url($sub['caption_file']);
+                    }
+                    if (isset($sub['label']) && is_scalar($sub['label'])) {
+                        $videos[$index]['h5vp_subtitle_playerio'][$sub_index]['label'] = sanitize_text_field((string) $sub['label']);
+                    }
+                }
+            }
+            if (!empty($video['h5vp_quality_playerio']) && is_array($video['h5vp_quality_playerio'])) {
+                foreach ($video['h5vp_quality_playerio'] as $q_index => $quality) {
+                    if (is_array($quality) && isset($quality['video_file'])) {
+                        $videos[$index]['h5vp_quality_playerio'][$q_index]['video_file'] = h5vp_sanitize_player_url($quality['video_file']);
+                    }
+                }
+            }
+        }
+
+        return $videos;
+    }
+}
+
 if (!function_exists('h5vp_sanitize_stored_player_attributes')) {
     /**
      * Sanitize the attributes of one html5-player block as they are stored in post_content.
@@ -260,8 +311,25 @@ if (!function_exists('h5vp_sanitize_stored_player_attributes')) {
 
             if (!empty($attrs['subtitle']) && is_array($attrs['subtitle'])) {
                 foreach ($attrs['subtitle'] as $index => $sub) {
-                    if (is_array($sub) && isset($sub['caption_file'])) {
+                    if (!is_array($sub)) {
+                        continue;
+                    }
+                    if (isset($sub['caption_file'])) {
                         $attrs['subtitle'][$index]['caption_file'] = h5vp_sanitize_player_url($sub['caption_file']);
+                    }
+                    // Plyr writes the label into its captions menu as HTML: plain text only.
+                    if (isset($sub['label']) && is_scalar($sub['label'])) {
+                        $attrs['subtitle'][$index]['label'] = sanitize_text_field((string) $sub['label']);
+                    }
+                }
+            }
+
+            foreach (array('quality', 'qualities') as $quality_key) {
+                if (!empty($attrs[$quality_key]) && is_array($attrs[$quality_key])) {
+                    foreach ($attrs[$quality_key] as $index => $quality) {
+                        if (is_array($quality) && isset($quality['video_file'])) {
+                            $attrs[$quality_key][$index]['video_file'] = h5vp_sanitize_player_url($quality['video_file']);
+                        }
                     }
                 }
             }
@@ -286,13 +354,7 @@ if (!function_exists('h5vp_sanitize_stored_player_attributes')) {
                 $attrs['controls'] = h5vp_sanitize_player_controls($attrs['controls']);
             }
             if (!empty($attrs['videos']) && is_array($attrs['videos'])) {
-                foreach ($attrs['videos'] as $index => $video) {
-                    foreach (array('video_source', 'h5vp_video_source', 'video_thumb', 'h5vp_custom_download_url') as $video_key) {
-                        if (is_array($video) && isset($video[$video_key])) {
-                            $attrs['videos'][$index][$video_key] = h5vp_sanitize_player_url($video[$video_key]);
-                        }
-                    }
-                }
+                $attrs['videos'] = h5vp_sanitize_playlist_videos($attrs['videos']);
             }
         } elseif ('html5-player/audio' === $block_name) {
             $url_keys = array('source', 'artwork');
