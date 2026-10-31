@@ -143,6 +143,13 @@ export const welcomeInfo = (adminUrl, editor = '') => ({
     },
     changelogs: [
         {
+            version: '2.14.2 - 31 Oct, 2026',
+            type: 'fix',
+            list: [
+                '<strong>Fixed:</strong> Security: player settings saved in a block are now also checked in the block editor and when a post is saved'
+            ]
+        },
+        {
             version: '2.14.1 - 27 Oct, 2026',
             type: 'fix',
             list: [
@@ -169,7 +176,7 @@ export const welcomeInfo = (adminUrl, editor = '') => ({
             ]
         }
     ],
-    changelogsLimit: 2,
+    changelogsLimit: 3,
     changelogsReadMoreLabel: 'View More Changelogs',
     proFeatures: [
         '6 Premium Player Skins (Modern, Floating Pill, Stacked & more).',

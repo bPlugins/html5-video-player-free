@@ -3,6 +3,7 @@ import { produce } from "immer";
 import { EventEmitter } from "bp-utils";
 import { Features, QualityItem, CaptionItem, PlayerConstructorOptions, DeferredEvent, SourceInfo, TrackInfo } from "src/interfaces/MyPlayerInterface";
 import { isIOS } from "src/utils/isIOS";
+import { safeUrl, sanitizePlayerOptions } from "src/utils/playerSecurity";
 
 
 // ────────────────────────────────────────────────────────────────
@@ -151,7 +152,9 @@ class MyPlayer extends EventEmitter {
    * Consolidates all option normalization into a single pass.
    * Replaces the original 5 separate `produce()` calls.
    */
-  private buildOptions(raw: any): any {
+  private buildOptions(rawOptions: any): any {
+    // In the block editor the options come straight from post_content, not from the sanitized server render.
+    const raw = sanitizePlayerOptions(rawOptions);
     const wrapperWidth = (this.media.closest(".plyr_wrapper") as HTMLElement)?.offsetWidth ?? Infinity;
 
     return produce(raw, (draft: any) => {
@@ -559,7 +562,8 @@ class MyPlayer extends EventEmitter {
 
     setTimeout(() => {
       if (!this.options.urls?.enabled && this.player.source) {
-        this.player.download = this.player.source;
+        const download = safeUrl(this.player.source);
+        if (download) this.player.download = download;
       }
     }, 50);
 

@@ -27,10 +27,11 @@ if (!function_exists('h5vp_sanitize_player_url')) {
      * Relative, protocol-relative and http(s) URLs come back unchanged, so stored
      * values keep working exactly as before.
      *
-     * @param mixed $url Raw URL from block attributes.
+     * @param mixed $url       Raw URL from block attributes.
+     * @param array $protocols Allowed schemes (links may also allow mailto/tel).
      * @return string The URL, or '' when it must not reach the player.
      */
-    function h5vp_sanitize_player_url($url)
+    function h5vp_sanitize_player_url($url, $protocols = array('http', 'https'))
     {
         if (!is_scalar($url)) {
             return '';
@@ -42,7 +43,7 @@ if (!function_exists('h5vp_sanitize_player_url')) {
         $check = html_entity_decode($url, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $check = preg_replace('/[\x00-\x20\x7f]+/', '', $check);
 
-        if (preg_match('/^([a-z][a-z0-9+.\-]*):/i', $check, $matches) && !in_array(strtolower($matches[1]), array('http', 'https'), true)) {
+        if (preg_match('/^([a-z][a-z0-9+.\-]*):/i', $check, $matches) && !in_array(strtolower($matches[1]), $protocols, true)) {
             return '';
         }
 
@@ -231,6 +232,141 @@ if (!function_exists('h5vp_sanitize_player_options')) {
         return $clean;
     }
 }
+
+if (!function_exists('h5vp_sanitize_stored_player_attributes')) {
+    /**
+     * Sanitize the attributes of one html5-player block as they are stored in post_content.
+     *
+     * The block editor reads these straight from post_content, so they are cleaned when the post is
+     * saved, not only when it is rendered. Only unsafe values change; legitimate ones stay as stored.
+     *
+     * @param string $block_name Block name.
+     * @param array  $attrs      Block attributes.
+     * @return array
+     */
+    function h5vp_sanitize_stored_player_attributes($block_name, $attrs)
+    {
+        if (!is_array($attrs)) {
+            return $attrs;
+        }
+
+        $url_keys = array();
+
+        if (in_array($block_name, array('html5-player/video', 'html5-player/vimeo', 'html5-player/youtube'), true)) {
+            if (isset($attrs['options'])) {
+                $attrs['options'] = h5vp_sanitize_player_options($attrs['options']);
+            }
+            $url_keys = array('source', 'poster', 'CDURL');
+
+            if (!empty($attrs['subtitle']) && is_array($attrs['subtitle'])) {
+                foreach ($attrs['subtitle'] as $index => $sub) {
+                    if (is_array($sub) && isset($sub['caption_file'])) {
+                        $attrs['subtitle'][$index]['caption_file'] = h5vp_sanitize_player_url($sub['caption_file']);
+                    }
+                }
+            }
+
+            // Button/overlay links may legitimately be email or phone links.
+            $link_protocols = array('http', 'https', 'mailto', 'tel');
+            if (isset($attrs['features']['endScreen']['btnLink'])) {
+                $attrs['features']['endScreen']['btnLink'] = h5vp_sanitize_player_url($attrs['features']['endScreen']['btnLink'], $link_protocols);
+            }
+            if (!empty($attrs['features']['overlay']['items']) && is_array($attrs['features']['overlay']['items'])) {
+                foreach ($attrs['features']['overlay']['items'] as $index => $item) {
+                    if (is_array($item) && isset($item['link'])) {
+                        $attrs['features']['overlay']['items'][$index]['link'] = h5vp_sanitize_player_url($item['link'], $link_protocols);
+                    }
+                    if (is_array($item) && isset($item['logo'])) {
+                        $attrs['features']['overlay']['items'][$index]['logo'] = h5vp_sanitize_player_url($item['logo']);
+                    }
+                }
+            }
+        } elseif ('html5-player/playlist' === $block_name) {
+            if (isset($attrs['controls'])) {
+                $attrs['controls'] = h5vp_sanitize_player_controls($attrs['controls']);
+            }
+            if (!empty($attrs['videos']) && is_array($attrs['videos'])) {
+                foreach ($attrs['videos'] as $index => $video) {
+                    foreach (array('video_source', 'h5vp_video_source', 'video_thumb', 'h5vp_custom_download_url') as $video_key) {
+                        if (is_array($video) && isset($video[$video_key])) {
+                            $attrs['videos'][$index][$video_key] = h5vp_sanitize_player_url($video[$video_key]);
+                        }
+                    }
+                }
+            }
+        } elseif ('html5-player/audio' === $block_name) {
+            $url_keys = array('source', 'artwork');
+            if (!empty($attrs['tracks']) && is_array($attrs['tracks'])) {
+                foreach ($attrs['tracks'] as $index => $track) {
+                    foreach (array('source', 'artwork') as $track_key) {
+                        if (is_array($track) && isset($track[$track_key])) {
+                            $attrs['tracks'][$index][$track_key] = h5vp_sanitize_player_url($track[$track_key]);
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach ($url_keys as $url_key) {
+            if (isset($attrs[$url_key])) {
+                $attrs[$url_key] = h5vp_sanitize_player_url($attrs[$url_key]);
+            }
+        }
+
+        return $attrs;
+    }
+}
+
+if (!function_exists('h5vp_sanitize_player_blocks')) {
+    /**
+     * Walk a parsed block tree (inner blocks included) and sanitize every html5-player block.
+     *
+     * @param array $blocks  Parsed blocks.
+     * @param bool  $changed Set to true when any attribute changed.
+     * @return array
+     */
+    function h5vp_sanitize_player_blocks($blocks, &$changed)
+    {
+        foreach ($blocks as $index => $block) {
+            if (!empty($block['blockName']) && 0 === strpos($block['blockName'], 'html5-player/') && !empty($block['attrs'])) {
+                $clean = h5vp_sanitize_stored_player_attributes($block['blockName'], $block['attrs']);
+                if ($clean !== $block['attrs']) {
+                    $blocks[$index]['attrs'] = $clean;
+                    $changed = true;
+                }
+            }
+            if (!empty($block['innerBlocks'])) {
+                $blocks[$index]['innerBlocks'] = h5vp_sanitize_player_blocks($block['innerBlocks'], $changed);
+            }
+        }
+
+        return $blocks;
+    }
+}
+
+if (!function_exists('h5vp_sanitize_saved_player_blocks')) {
+    /**
+     * content_save_pre: clean html5-player block attributes when a user without unfiltered_html saves.
+     *
+     * Runs after kses (priority 20). The content is slashed at this point. It is only re-serialized
+     * when something actually changed, so posts with legitimate blocks are stored byte for byte.
+     *
+     * @param string $content Slashed post content.
+     * @return string
+     */
+    function h5vp_sanitize_saved_player_blocks($content)
+    {
+        if (!is_string($content) || false === strpos($content, 'wp:html5-player/') || current_user_can('unfiltered_html')) {
+            return $content;
+        }
+
+        $changed = false;
+        $blocks = h5vp_sanitize_player_blocks(parse_blocks(wp_unslash($content)), $changed);
+
+        return $changed ? wp_slash(serialize_blocks($blocks)) : $content;
+    }
+}
+add_filter('content_save_pre', 'h5vp_sanitize_saved_player_blocks', 20);
 
 if (!function_exists(('h5vp_process_block_attributes'))) {
     function h5vp_process_block_attributes($attributes)
