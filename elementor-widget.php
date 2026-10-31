@@ -44,10 +44,12 @@ final class H5VP_Free_Elementor_Addons
 	public function frontend_assets_scripts()
 	{
 		// Same registration as blocks.php (first one wins): deferred, and Plyr has no jQuery dependency.
-		wp_register_script('bplugins-plyrio', plugin_dir_url(__FILE__) . 'public/js/plyr-v3.8.4.polyfilled.js', array(), '3.8.4', array('strategy' => 'defer', 'in_footer' => false));
+		wp_register_script('h5vp-plyr', plugin_dir_url(__FILE__) . 'public/js/plyr-v3.8.4.polyfilled.js', array(), H5VP_VER, array('strategy' => 'defer', 'in_footer' => false));
 		wp_register_script('bplugins-hls', plugin_dir_url(__FILE__) . 'public/js/hls.min.js', array(), '1.7.0', array('strategy' => 'defer', 'in_footer' => false));
 
-		wp_register_style('bplugins-plyrio', plugin_dir_url(__FILE__) . 'public/css/h5vp.css', array(), H5VP_VER, 'all');
+		wp_register_style('h5vp-plyr', plugin_dir_url(__FILE__) . 'public/css/h5vp.css', array(), H5VP_VER, 'all');
+		// Code that still depends on the old shared 'bplugins-plyrio' handle keeps working (see the function).
+		h5vp_register_plyr_alias();
 
 	}
 

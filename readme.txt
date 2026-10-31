@@ -261,6 +261,7 @@ When you save a video player whose source is a Vimeo URL, the plugin sends the v
 * **Security:** Subtitle labels are now shown as plain text in the player's captions menu
 * **Security:** Hardened the bundled Plyr library's menu labels and the player's custom styles
 * **Update:** Freemius SDK updated to 2.13.5
+* **Fixed:** The player always loads its own Plyr library and styles, even when HTML5 Audio Player is active on the same site
 
 = 2.14.1 - 27 October, 2026 =
 * **Security:** Player settings saved in a block (download link, ad tag URL, controls, chapter labels) are now checked before they reach the page, so they can no longer load outside scripts or run code. Reported through the Patchstack VDP.

@@ -883,3 +883,23 @@ if (!function_exists('h5vp_getPostMeta')) {
         };
     }
 }
+
+if (!function_exists('h5vp_register_plyr_alias')) {
+    /**
+     * Keep the old 'bplugins-plyrio' handle working for code that still depends on it.
+     *
+     * The player loads Plyr and its stylesheet under its own 'h5vp-plyr' handle. 'bplugins-plyrio' is shared
+     * with other bPlugins players (HTML5 Audio Player registers Plyr 3.7.2 under it), and whichever plugin
+     * registered it first won: the video player then ran on that older, unpatched Plyr without its own
+     * stylesheet. When another plugin already owns the old handle it is left alone.
+     */
+    function h5vp_register_plyr_alias()
+    {
+        if (wp_script_is('h5vp-plyr', 'registered') && !wp_script_is('bplugins-plyrio', 'registered')) {
+            wp_register_script('bplugins-plyrio', false, array('h5vp-plyr'), H5VP_VER, false);
+        }
+        if (wp_style_is('h5vp-plyr', 'registered') && !wp_style_is('bplugins-plyrio', 'registered')) {
+            wp_register_style('bplugins-plyrio', false, array('h5vp-plyr'), H5VP_VER);
+        }
+    }
+}

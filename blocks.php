@@ -32,14 +32,16 @@ if (!class_exists(__NAMESPACE__ . '\H5VP_Block')) {
             // Front-end scripts never block rendering: `defer` keeps them in <head> but runs them after parsing.
             $defer = ['strategy' => 'defer', 'in_footer' => false];
 
-            wp_register_script('bplugins-plyrio', plugin_dir_url(__FILE__) . 'public/js/plyr-v3.8.4.polyfilled.js', [], '3.8.4', $defer);
+            wp_register_script('h5vp-plyr', plugin_dir_url(__FILE__) . 'public/js/plyr-v3.8.4.polyfilled.js', [], H5VP_VER, $defer);
             wp_register_script('bplugins-hls', plugin_dir_url(__FILE__) . 'public/js/hls.min.js', [], '1.7.0', $defer);
             // No wp-util: the front-end bundle never calls wp.ajax, and wp-util pulled jQuery, jQuery Migrate and Underscore onto every page with a player.
-            wp_register_script('h5vp-view', plugin_dir_url(__FILE__) . 'build/blocks/view.js', ['react', 'react-dom', 'bplugins-plyrio'], $this->asset_version('blocks/view'), $defer);
+            wp_register_script('h5vp-view', plugin_dir_url(__FILE__) . 'build/blocks/view.js', ['react', 'react-dom', 'h5vp-plyr'], $this->asset_version('blocks/view'), $defer);
             wp_register_script('h5vp-blocks', plugin_dir_url(__FILE__) . 'build/blocks/blocks.js', [], $this->asset_version('blocks/blocks'), false);
 
-            wp_register_style('bplugins-plyrio', plugin_dir_url(__FILE__) . 'public/css/h5vp.css', [], H5VP_VER, 'all');
-            wp_register_style('h5vp-view', plugin_dir_url(__FILE__) . 'build/blocks/view.css', ['bplugins-plyrio'], $this->asset_version('blocks/view'), 'all');
+            wp_register_style('h5vp-plyr', plugin_dir_url(__FILE__) . 'public/css/h5vp.css', [], H5VP_VER, 'all');
+            // Code that still depends on the old shared 'bplugins-plyrio' handle keeps working (see the function).
+            h5vp_register_plyr_alias();
+            wp_register_style('h5vp-view', plugin_dir_url(__FILE__) . 'build/blocks/view.css', ['h5vp-plyr'], $this->asset_version('blocks/view'), 'all');
             wp_register_style('h5vp-blocks', plugin_dir_url(__FILE__) . 'build/blocks/blocks.css', [], $this->asset_version('blocks/blocks'), 'all');
 
             // React is only needed once the player mounts. WordPress applies `defer` only when every script that
@@ -148,8 +150,8 @@ if (!class_exists(__NAMESPACE__ . '\H5VP_Block')) {
                 $handle = generate_block_asset_handle('html5-player/playlist', $field);
                 if (wp_script_is($handle, 'registered')) {
                     if (isset($wp_scripts->registered[$handle]) && is_array($wp_scripts->registered[$handle]->deps)) {
-                        if (!in_array('bplugins-plyrio', $wp_scripts->registered[$handle]->deps)) {
-                            $wp_scripts->registered[$handle]->deps[] = 'bplugins-plyrio';
+                        if (!in_array('h5vp-plyr', $wp_scripts->registered[$handle]->deps)) {
+                            $wp_scripts->registered[$handle]->deps[] = 'h5vp-plyr';
                         }
                     }
                     wp_localize_script($handle, 'h5vpBlock', $data);
@@ -163,8 +165,8 @@ if (!class_exists(__NAMESPACE__ . '\H5VP_Block')) {
                 $handle = generate_block_asset_handle('html5-player/playlist', $field);
                 if (wp_style_is($handle, 'registered')) {
                     if (isset($wp_styles->registered[$handle]) && is_array($wp_styles->registered[$handle]->deps)) {
-                        if (!in_array('bplugins-plyrio', $wp_styles->registered[$handle]->deps)) {
-                            $wp_styles->registered[$handle]->deps[] = 'bplugins-plyrio';
+                        if (!in_array('h5vp-plyr', $wp_styles->registered[$handle]->deps)) {
+                            $wp_styles->registered[$handle]->deps[] = 'h5vp-plyr';
                         }
                     }
                 }

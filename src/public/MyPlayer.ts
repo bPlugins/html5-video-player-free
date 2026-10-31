@@ -64,6 +64,10 @@ export const buildCaptionTracks = (captions: CaptionItem[] | null | undefined): 
 // MyPlayer Class
 // ────────────────────────────────────────────────────────────────
 
+// The bundled Plyr keeps its own reference in window.h5vpPlyr: window.Plyr may belong to another plugin's
+// (older) Plyr, e.g. HTML5 Audio Player's 3.7.2.
+const getPlyr = () => window.h5vpPlyr || window.Plyr;
+
 class MyPlayer extends EventEmitter {
   media: HTMLVideoElement;
   poster: string;
@@ -133,7 +137,7 @@ class MyPlayer extends EventEmitter {
     this.options = this.buildOptions(attributes.options);
 
     // Validate Plyr is available
-    if (typeof window.Plyr === "undefined") {
+    if (typeof getPlyr() === "undefined") {
       console.warn("Plyr is not defined. Please make sure Plyr library is loaded.");
       this.media.setAttribute("controls", "true");
       this.applyPreload();
@@ -376,7 +380,7 @@ class MyPlayer extends EventEmitter {
     // Plyr only ever *adds* the playsinline attribute, so hardcoding true here
     const playsinline = this.options?.playsinline !== false;
 
-    this.player = new window.Plyr(this.media, { ...plyrOpts, playsinline });
+    this.player = new (getPlyr())(this.media, { ...plyrOpts, playsinline });
     // Plyr has wrapped the <video> by now, so loading can start without being restarted by the move.
     this.applyPreload();
     this.keepNativeCaptionsHidden();

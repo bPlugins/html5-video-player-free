@@ -20,6 +20,7 @@ interface Window {
     };
     elementorFrontend: any;
     Plyr: any;
+    h5vpPlyr: any;
     h5vpI18n: any;
     instance: [Plyr?];
     dashjs: any;

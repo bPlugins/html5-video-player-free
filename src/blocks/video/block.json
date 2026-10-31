@@ -221,16 +221,16 @@
     }
   },
   "viewStyle": [
-    "bplugins-plyrio",
+    "h5vp-plyr",
     "h5vp-view"
   ],
   "editorStyle": [
     "h5vp-blocks",
-    "bplugins-plyrio"
+    "h5vp-plyr"
   ],
   "editorScript": [
     "h5vp-blocks",
-    "bplugins-plyrio",
+    "h5vp-plyr",
     "wp-util",
     "wp-data",
     "wp-block-editor"

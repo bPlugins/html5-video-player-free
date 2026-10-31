@@ -209,15 +209,15 @@
   },
   "editorScript": [
     "h5vp-blocks",
-    "bplugins-plyrio",
+    "h5vp-plyr",
     "wp-util"
   ],
   "editorStyle": [
     "h5vp-blocks",
-    "bplugins-plyrio"
+    "h5vp-plyr"
   ],
   "viewStyle": [
-    "bplugins-plyrio",
+    "h5vp-plyr",
     "h5vp-view"
   ],
   "render": "file:./../render.php",

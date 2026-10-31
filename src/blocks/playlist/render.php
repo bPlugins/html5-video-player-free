@@ -59,8 +59,8 @@ if (empty($h5vp_brand_color)) {
     $h5vp_brand_color = '#00b2ff';
 }
 
-wp_enqueue_script('bplugins-plyrio');
-wp_enqueue_style('bplugins-plyrio');
+wp_enqueue_script('h5vp-plyr');
+wp_enqueue_style('h5vp-plyr');
 
 // hls.js is not enqueued here: MyPlayer loads it on demand, only when an HLS item is actually played.
 
