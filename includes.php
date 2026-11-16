@@ -9,6 +9,7 @@ $h5vp_include_files = array(
     __DIR__ . "/blocks.php",
     __DIR__ . "/elementor-widget.php",
     __DIR__ . "/inc/functions.php",
+    __DIR__ . "/inc/class-h5vp-promo-banner.php",
 );
 
 foreach ($h5vp_include_files as $h5vp_file) {

@@ -42,9 +42,6 @@ export const dashboardInfo = (info) => {
 }
 
 
-
-
-
 export const welcomeInfo = (adminUrl, editor = '') => ({
     keywords: ['MP4', 'YouTube', 'Vimeo', 'HLS', 'VAST Ads', 'Chapters'],
     keywordsLabel: 'Formats & Features',
@@ -143,6 +140,13 @@ export const welcomeInfo = (adminUrl, editor = '') => ({
     },
     changelogs: [
         {
+            version: '2.14.3 - 17 Nov, 2026',
+            type: 'enhancement',
+            list: [
+                '<strong>Enhancement:</strong> Added Black Friday promotional banner and campaign notices.'
+            ]
+        },
+        {
             version: '2.14.2 - 31 Oct, 2026',
             type: 'fix',
             list: [
@@ -170,16 +174,9 @@ export const welcomeInfo = (adminUrl, editor = '') => ({
                 '<strong>Fixed:</strong> YouTube on iPhone/iPad, captions staying on after CC off, YouTube live/ links, Vimeo and video ID input',
                 '<strong>Fixed:</strong> Single player playback, a PHP warning, playlist scrollbar and download button color'
             ]
-        },
-        {
-            version: '2.13.1 - 16 Sep, 2026',
-            type: 'fix',
-            list: [
-                '<strong>Fixed:</strong> The Elementor widget did not appear in the Elementor editor.'
-            ]
         }
     ],
-    changelogsLimit: 3,
+    changelogsLimit: 4,
     changelogsReadMoreLabel: 'View More Changelogs',
     proFeatures: [
         '6 Premium Player Skins (Modern, Floating Pill, Stacked & more).',
