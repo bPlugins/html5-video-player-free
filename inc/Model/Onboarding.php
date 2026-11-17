@@ -96,6 +96,16 @@ class Onboarding
             $saved[$field] = $value;
         }
 
+        if (isset($params['editor'])) {
+            if ('shortcode' === $params['editor']) {
+                Settings::update('h5vp_gutenberg_enable', false);
+                $saved['gutenberg_enable'] = false;
+            } elseif ('gutenberg' === $params['editor']) {
+                Settings::update('h5vp_gutenberg_enable', true);
+                $saved['gutenberg_enable'] = true;
+            }
+        }
+
         $completed = isset($params['completed']) && rest_sanitize_boolean($params['completed']);
 
         if ($completed) {

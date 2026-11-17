@@ -143,7 +143,8 @@ export const welcomeInfo = (adminUrl, editor = '') => ({
             version: '2.14.3 - 17 Nov, 2026',
             type: 'enhancement',
             list: [
-                '<strong>Enhancement:</strong> Added Black Friday promotional banner and campaign notices.'
+                '<strong>Enhancement:</strong> Added Black Friday promotional banner and campaign notices.',
+                '<strong>Fixed:</strong> Guided setup wizard redirects according to the chosen editor (Shortcode opens classic screen, Gutenberg opens block editor, Elementor opens pages).'
             ]
         },
         {
@@ -162,21 +163,9 @@ export const welcomeInfo = (adminUrl, editor = '') => ({
             list: [
                 '<strong>Fixed:</strong> Security: player settings saved in a block (download link, ad tag URL, controls, chapter labels) can no longer load outside scripts or run code'
             ]
-        },
-        {
-            version: '2.14.0 - 14 Oct, 2026',
-            type: 'update',
-            list: [
-                '<strong>Improvement:</strong> Much faster pages: YouTube/Vimeo load only on play, players below the fold load on scroll, no layout shift',
-                '<strong>Improvement:</strong> Each video downloads once, scripts no longer block rendering, jQuery is no longer loaded on the front end',
-                '<strong>Improvement:</strong> Works with WP Rocket, Autoptimize and WP Super Cache',
-                '<strong>Improvement:</strong> Redesigned "Copied!" feedback for shortcodes, copy icon for the Quick Player shortcode, settings remember the open tab',
-                '<strong>Fixed:</strong> YouTube on iPhone/iPad, captions staying on after CC off, YouTube live/ links, Vimeo and video ID input',
-                '<strong>Fixed:</strong> Single player playback, a PHP warning, playlist scrollbar and download button color'
-            ]
         }
     ],
-    changelogsLimit: 4,
+    changelogsLimit: 3,
     changelogsReadMoreLabel: 'View More Changelogs',
     proFeatures: [
         '6 Premium Player Skins (Modern, Floating Pill, Stacked & more).',
