@@ -5,6 +5,7 @@ import ReactDOM from "react-dom"; // don't remove it — this import is what put
 import AudioPlayer from './player/AudioPlayer';
 import "./style.scss";
 import { whenNearViewport } from "src/utils/lazyMount";
+import { rescanOnDomChange } from "src/utils/domWatch";
 
 const renderRoot = (container: HTMLElement, element: React.ReactElement) => {
   if (typeof (ReactDOM as any).createRoot === "function") {
@@ -50,3 +51,6 @@ if (document.readyState === 'loading') {
 } else {
   initPlayer();
 }
+
+// Audio players that arrive after the page has loaded (infinite scroll, AJAX, popups, tabs) get set up too.
+rescanOnDomChange(initPlayer, ".h5vp_audio_player");

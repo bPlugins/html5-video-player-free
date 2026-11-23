@@ -7,9 +7,13 @@ import isVimeoLink from "../utils/isVimeoLink";
 import { watchReservedSpace } from "../public/reservedSpace";
 import { playMounted, whenNearViewport } from "../utils/lazyMount";
 import { isIOS } from "../utils/isIOS";
+import { rescanOnDomChange } from "../utils/domWatch";
 
-//@ts-ignore
-const { createRoot } = window.ReactDOM;
+const PLAYER_SELECTOR = '[class^="wp-block-html5-player-"]';
+
+/** How long a player waits for React to finish loading (a script optimizer can reorder scripts) before giving up. */
+const REACT_WAIT_MS = 200;
+const REACT_WAIT_TRIES = 25;
 
 /** Same provider detection as useVideoSource: YouTube/Vimeo embeds vs self-hosted media. */
 const isEmbed = (attributes: any): boolean => {
@@ -19,11 +23,19 @@ const isEmbed = (attributes: any): boolean => {
   return !!isYoutubeURL(source) || !!isVimeoLink(source);
 };
 
-const mount = (el: HTMLElement, startPlaying = false) => {
+const mount = (el: HTMLElement, startPlaying = false, tries = 0) => {
   if (el.dataset.h5vpMounted || !el.dataset.attributes) return;
-  el.dataset.h5vpMounted = "1";
 
+  // React is a separate script; if it has not run yet, try again shortly instead of failing for good.
+  const createRoot = (window as any).ReactDOM?.createRoot;
+  if (!createRoot) {
+    if (tries < REACT_WAIT_TRIES) window.setTimeout(() => mount(el, startPlaying, tries + 1), REACT_WAIT_MS);
+    return;
+  }
+
+  // Parse before marking the player as mounted, so a bad payload can't leave it half set up.
   const attributes = JSON.parse(el.dataset.attributes);
+  el.dataset.h5vpMounted = "1";
   // The visitor already pressed play on the placeholder — start as soon as the player is up.
   if (startPlaying) {
     if (isEmbed(attributes)) {
@@ -91,7 +103,14 @@ const setup = (el: HTMLElement) => {
 };
 
 const init = () => {
-  document.querySelectorAll<HTMLElement>('[class^="wp-block-html5-player-"]').forEach(setup);
+  document.querySelectorAll<HTMLElement>(PLAYER_SELECTOR).forEach((el) => {
+    // One broken player must not stop the players after it from being set up.
+    try {
+      setup(el);
+    } catch (err) {
+      console.error("HTML5 Video Player: could not set up a player.", err);
+    }
+  });
 };
 
 if (document.readyState === "loading") {
@@ -99,6 +118,9 @@ if (document.readyState === "loading") {
 } else {
   init();
 }
+
+// Players that arrive after the page has loaded (infinite scroll, AJAX, popups, tabs) get set up too.
+rescanOnDomChange(init, PLAYER_SELECTOR);
 
 window.addEventListener("elementor/frontend/init", function () {
   const elementorFrontend = (window as any).elementorFrontend;

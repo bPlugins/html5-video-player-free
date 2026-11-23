@@ -112,6 +112,16 @@ if (!class_exists(__NAMESPACE__ . '\H5VP_Block')) {
                 'iconUrl' => H5VP_PLUGIN_DIR . 'img/plyr.svg',
                 'hlsUrl' => plugin_dir_url(__FILE__) . 'public/js/hls.min.js',
                 'postId' => is_singular() ? (int) get_the_ID() : 0,
+                // Shown on a player whose video file can't be loaded (src/utils/mediaError.ts).
+                'mediaError' => [
+                    'visitor' => __('This video can\'t be played right now.', 'html5-video-player'),
+                    'admin' => __('This video can\'t be played.', 'html5-video-player'),
+                    'notFound' => __('The file was not found, is blocked, or is in a format this browser can\'t play.', 'html5-video-player'),
+                    'mixed' => __('The video link starts with http:// but this page is https://, so the browser blocked it. Use an https:// link.', 'html5-video-player'),
+                    'format' => __('This file format (for example .mov or HEVC) is not supported by most browsers. Convert it to MP4 (H.264).', 'html5-video-player'),
+                    'network' => __('The connection was lost while the video was loading.', 'html5-video-player'),
+                    'decode' => __('The video file is damaged or uses a codec this browser can\'t play.', 'html5-video-player'),
+                ],
             ];
 
             if (current_user_can('edit_posts')) {
