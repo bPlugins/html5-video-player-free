@@ -69,6 +69,10 @@ function sanitizeTree(value: any, depth = 0): any {
   }
   const clean: Record<string, any> = {};
   Object.keys(value).forEach((key) => {
+    // An unset (undefined) value must stay unset: turning it into null breaks Plyr (e.g. seekTime).
+    if (value[key] === undefined) {
+      return;
+    }
     clean[key] = sanitizeTree(value[key], depth + 1);
   });
   return clean;
@@ -87,6 +91,17 @@ export function sanitizePlayerOptions(options: unknown): Record<string, any> {
       return;
     }
     const value = raw[key];
+    // Unset options fall back to Plyr's defaults; a null/non-numeric seek time would crash Plyr's labels.
+    if (value === undefined) {
+      return;
+    }
+    if (key === 'seekTime') {
+      const seconds = value === null || value === '' ? NaN : Number(value);
+      if (Number.isFinite(seconds)) {
+        clean[key] = seconds;
+      }
+      return;
+    }
 
     switch (key) {
       case 'controls':

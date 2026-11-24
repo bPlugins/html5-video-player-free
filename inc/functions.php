@@ -143,6 +143,13 @@ if (!function_exists('h5vp_sanitize_player_options')) {
             }
 
             switch ($key) {
+                case 'seekTime':
+                    // A null or non-numeric seek time breaks the player's labels; skip it so the default (10) applies.
+                    if (is_numeric($value)) {
+                        $clean[$key] = $value + 0;
+                    }
+                    break;
+
                 case 'controls':
                     $clean[$key] = h5vp_sanitize_player_controls($value);
                     break;
