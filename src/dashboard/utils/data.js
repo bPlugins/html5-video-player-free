@@ -28,6 +28,7 @@ export const dashboardInfo = (info) => {
             org: `https://wordpress.org/plugins/${slug}/`,
             docs: `https://bplugins.com/docs/${slug}/`,
             pricing: `https://bplugins.com/products/${slug}/pricing`,
+			featureRequest: `https://bplugins.com/products/${slug}/roadmap-and-ideas/`
         },
         freemius: {
             product_id: 14259,
