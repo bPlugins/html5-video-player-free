@@ -32,8 +32,10 @@ export const rescanOnDomChange = (scan: () => void, selector: string): void => {
       for (const node of Array.from(record.addedNodes)) {
         if (node.nodeType !== 1) continue;
         const el = node as Element;
-        // Nodes a mounted player adds to itself (menus, captions) can never contain a new player.
-        if (el.closest("[data-h5vp-mounted]")) continue;
+        // Nodes a mounted player adds to itself (menus, captions) can never contain a new player. A player that
+        // was copied together with its data-h5vp-mounted flag (popup plugins do that) is itself a new player, so
+        // only the ancestors are checked, not the node.
+        if (el.parentElement?.closest("[data-h5vp-mounted]")) continue;
         if (el.matches(selector) || el.querySelector(selector)) {
           timer = window.setTimeout(() => {
             timer = 0;

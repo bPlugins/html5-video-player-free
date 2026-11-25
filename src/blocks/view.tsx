@@ -8,6 +8,7 @@ import { watchReservedSpace } from "../public/reservedSpace";
 import { playMounted, whenNearViewport } from "../utils/lazyMount";
 import { isIOS } from "../utils/isIOS";
 import { rescanOnDomChange } from "../utils/domWatch";
+import { pauseWhenHidden } from "../utils/pauseWhenHidden";
 
 const PLAYER_SELECTOR = '[class^="wp-block-html5-player-"]';
 
@@ -23,8 +24,42 @@ const isEmbed = (attributes: any): boolean => {
   return !!isYoutubeURL(source) || !!isVimeoLink(source);
 };
 
+/** Players this script has set up itself. A copy made by a popup/modal plugin carries the same data-h5vp-* attributes but is not in here. */
+const live = new WeakSet<Element>();
+const waiting = new WeakSet<Element>();
+
+type Payload = { attributes: string; nonce: string };
+
+/** Markup copied from a player keeps its data-h5vp-* flags (and, if it was already running, dead rendered children). */
+const dropCopiedState = (el: HTMLElement) => {
+  if (live.has(el) || waiting.has(el)) return;
+  delete el.dataset.h5vpMounted;
+  delete el.dataset.h5vpPending;
+};
+
+/** The player's settings: from the server markup, or from the copy kept in data-h5vp-restore once it has mounted (a copy of a running player has only that). */
+const readPayload = (el: HTMLElement): Payload | null => {
+  if (el.dataset.attributes) {
+    return { attributes: el.dataset.attributes, nonce: el.dataset.nonce || "" };
+  }
+  if (el.dataset.h5vpRestore) {
+    try {
+      const saved = JSON.parse(el.dataset.h5vpRestore);
+      if (saved && typeof saved.attributes === "string") {
+        return { attributes: saved.attributes, nonce: typeof saved.nonce === "string" ? saved.nonce : "" };
+      }
+    } catch {
+      /* fall through */
+    }
+  }
+  return null;
+};
+
 const mount = (el: HTMLElement, startPlaying = false, tries = 0) => {
-  if (el.dataset.h5vpMounted || !el.dataset.attributes) return;
+  dropCopiedState(el);
+  if (live.has(el)) return;
+  const payload = readPayload(el);
+  if (!payload) return;
 
   // React is a separate script; if it has not run yet, try again shortly instead of failing for good.
   const createRoot = (window as any).ReactDOM?.createRoot;
@@ -34,8 +69,11 @@ const mount = (el: HTMLElement, startPlaying = false, tries = 0) => {
   }
 
   // Parse before marking the player as mounted, so a bad payload can't leave it half set up.
-  const attributes = JSON.parse(el.dataset.attributes);
+  const attributes = JSON.parse(payload.attributes);
+  live.add(el);
+  waiting.delete(el);
   el.dataset.h5vpMounted = "1";
+  el.dataset.h5vpRestore = JSON.stringify(payload);
   // The visitor already pressed play on the placeholder — start as soon as the player is up.
   if (startPlaying) {
     if (isEmbed(attributes)) {
@@ -45,7 +83,7 @@ const mount = (el: HTMLElement, startPlaying = false, tries = 0) => {
       attributes.options = { ...attributes.options, autoplay: true };
     }
   }
-  const nonce = el.dataset.nonce;
+  const nonce = payload.nonce || undefined;
   createRoot(el).render(<VideoPlayer attributes={attributes} nonce={nonce} />);
 
   el.removeAttribute("data-attributes");
@@ -53,6 +91,7 @@ const mount = (el: HTMLElement, startPlaying = false, tries = 0) => {
 
   // Hand sizing back to the player once it can size itself (see render.php).
   watchReservedSpace(el);
+  pauseWhenHidden(el);
 };
 
 /**
@@ -60,11 +99,14 @@ const mount = (el: HTMLElement, startPlaying = false, tries = 0) => {
  * because their embeds download ~1MB of third-party script. Autoplay players mount right away.
  */
 const setup = (el: HTMLElement) => {
-  if (el.dataset.h5vpMounted || el.dataset.h5vpPending || !el.dataset.attributes) return;
+  dropCopiedState(el);
+  if (live.has(el) || waiting.has(el)) return;
+  const payload = readPayload(el);
+  if (!payload) return;
 
   let attributes: any;
   try {
-    attributes = JSON.parse(el.dataset.attributes);
+    attributes = JSON.parse(payload.attributes);
   } catch {
     return;
   }
@@ -76,10 +118,11 @@ const setup = (el: HTMLElement) => {
     return;
   }
 
+  waiting.add(el);
   el.dataset.h5vpPending = "1";
   const playNow = (event?: Event) => {
     event?.preventDefault();
-    if (el.dataset.h5vpMounted) {
+    if (live.has(el)) {
       playMounted(el);
       return;
     }
