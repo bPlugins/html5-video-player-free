@@ -144,7 +144,6 @@ export const welcomeInfo = (adminUrl, editor = '') => ({
             version: '2.14.3 - 17 Nov, 2026',
             type: 'enhancement',
             list: [
-                '<strong>Enhancement:</strong> Added Black Friday promotional banner and campaign notices.',
                 '<strong>Fixed:</strong> Guided setup wizard redirects according to the chosen editor (Shortcode opens classic screen, Gutenberg opens block editor, Elementor opens pages).'
             ]
         },

@@ -257,7 +257,6 @@ When you save a video player whose source is a Vimeo URL, the plugin sends the v
 
 
 = 2.14.3 - 17 November, 2026 =
-* **Enhancement:** Added Black Friday promotional banner and campaign notices.
 * **Fixed:** Guided setup wizard redirects according to the chosen editor (Shortcode opens classic screen, Gutenberg opens block editor, Elementor opens pages).
 
 = 2.14.2 - 31 October, 2026 =
