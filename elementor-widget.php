@@ -60,6 +60,11 @@ final class H5VP_Free_Elementor_Addons
 		}
 
 		\Elementor\Plugin::instance()->widgets_manager->register(new VideoPlayer());
+
+		if (file_exists(__DIR__ . '/inc/Elementor/VideoLibrary.php')) {
+			require_once(__DIR__ . '/inc/Elementor/VideoLibrary.php');
+			\Elementor\Plugin::instance()->widgets_manager->register(new \H5VP\Elementor\VideoLibrary());
+		}
 	}
 }
 

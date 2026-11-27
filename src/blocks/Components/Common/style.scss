@@ -749,3 +749,19 @@
 .html5_video_players .plyr--vimeo .plyr__captions {
   display: none;
 }
+
+
+/* Video Fit: Fill (crop). Set by applyFit() in src/utils/playerExtras.ts only when the owner chose "Fill". */
+.html5_video_players .plyr.h5vp-fit-cover {
+  .plyr__video-wrapper video,
+  .plyr__poster {
+    object-fit: cover;
+    background-size: cover;
+  }
+
+  &.plyr--youtube .plyr__video-embed iframe,
+  &.plyr--vimeo .plyr__video-embed iframe {
+    transform: scale(var(--h5vp-fit-scale, 1));
+    transform-origin: center center;
+  }
+}

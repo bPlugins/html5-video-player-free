@@ -74,6 +74,15 @@ function h5vp_uninstall_site()
         wp_delete_post((int) $player_id, true);
     }
 
+    // Delete the video categories. The taxonomy is not registered during uninstall, so register it just to delete its terms.
+    register_taxonomy('h5vp_video_cat', 'videoplayer');
+    $category_ids = get_terms(['taxonomy' => 'h5vp_video_cat', 'hide_empty' => false, 'fields' => 'ids']);
+    if (is_array($category_ids)) {
+        foreach ($category_ids as $category_id) {
+            wp_delete_term((int) $category_id, 'h5vp_video_cat');
+        }
+    }
+
     // 4. Drop the custom videos table.
     $table = $wpdb->prefix . 'h5vp_videos';
     // The %i placeholder safely escapes the table identifier (WP 6.2+).

@@ -17,7 +17,7 @@ const ALLOWED_OPTION_KEYS = [
   'controls', 'settings', 'loadSprite', 'autoplay', 'autopause', 'playsinline', 'seekTime', 'volume', 'muted',
   'hideControls', 'resetOnEnd', 'clickToPlay', 'disableContextMenu', 'invertTime', 'toggleInvert', 'displayDuration',
   'duration', 'tooltips', 'captions', 'ratio', 'storage', 'speed', 'loop', 'ads', 'urls', 'markers', 'preload',
-  'quality', 'fullscreen', 'keyboard', 'imported', 'autoplayNextVideo', 'showPrevNext', 'showSearch',
+  'quality', 'fullscreen', 'keyboard', 'imported', 'autoplayNextVideo', 'showPrevNext', 'showSearch', 'defaultVolume', 'fit',
 ];
 
 /** Schemes a clickable link (end screen button, overlay) may use besides http(s). */
@@ -104,6 +104,21 @@ export function sanitizePlayerOptions(options: unknown): Record<string, any> {
     }
 
     switch (key) {
+      case 'defaultVolume': {
+        // Percent 0-100; an empty or invalid value means "not set" (the player's usual start volume).
+        const percent = value === null || value === '' ? NaN : Number(value);
+        if (Number.isFinite(percent)) {
+          clean[key] = Math.min(100, Math.max(0, Math.round(percent)));
+        }
+        break;
+      }
+
+      case 'fit':
+        if (value === 'contain' || value === 'cover') {
+          clean[key] = value;
+        }
+        break;
+
       case 'controls':
         clean[key] = sanitizeControls(value);
         break;

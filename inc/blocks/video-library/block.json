@@ -1,0 +1,26 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "html5-player/video-library",
+	"title": "Video Library",
+	"category": "media",
+	"icon": "grid-view",
+	"description": "Show the videos of a video category as a grid or a list.",
+	"keywords": [ "video", "library", "category", "grid", "playlist" ],
+	"textdomain": "html5-video-player",
+	"style": "h5vp-library",
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ],
+		"autoRegister": true
+	},
+	"attributes": {
+		"category": { "type": "string", "default": "" },
+		"layout": { "type": "string", "enum": [ "grid", "list" ], "default": "grid" },
+		"columns": { "type": "number", "default": 3 },
+		"limit": { "type": "number", "default": 12 },
+		"orderby": { "type": "string", "enum": [ "date", "title", "menu_order", "rand" ], "default": "date" },
+		"order": { "type": "string", "enum": [ "ASC", "DESC" ], "default": "DESC" },
+		"titles": { "type": "boolean", "default": true }
+	}
+}

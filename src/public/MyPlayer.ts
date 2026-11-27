@@ -5,6 +5,7 @@ import { Features, QualityItem, CaptionItem, PlayerConstructorOptions, DeferredE
 import { isIOS } from "src/utils/isIOS";
 import { plainText, safeUrl, sanitizePlayerOptions } from "src/utils/playerSecurity";
 import { watchMediaError } from "src/utils/mediaError";
+import { applyDefaultVolume, applyFit } from "src/utils/playerExtras";
 
 
 // ────────────────────────────────────────────────────────────────
@@ -216,6 +217,9 @@ class MyPlayer extends EventEmitter {
         draft.volume = 0;
         draft.storage = { enabled: false };
       } else {
+        // Plyr builds with the usual 50%. The owner's "Default volume" is applied after Plyr is ready
+        // (applyDefaultVolume) without being saved: a volume given here would be stored as the visitor's own
+        // preference and every other player on the site would start at it.
         draft.volume = 0.5;
         draft.storage = { enabled: true };
       }
@@ -384,6 +388,8 @@ class MyPlayer extends EventEmitter {
     const playsinline = this.options?.playsinline !== false;
 
     this.player = new (getPlyr())(this.media, { ...plyrOpts, playsinline });
+    applyDefaultVolume(this.player, this.options);
+    applyFit(this.player, this.options);
     // Plyr has wrapped the <video> by now, so loading can start without being restarted by the move.
     this.applyPreload();
     this.keepNativeCaptionsHidden();

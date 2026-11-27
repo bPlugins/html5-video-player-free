@@ -9,12 +9,12 @@ interface BToggleControlProps {
   [key: string]: any;
 }
 
-const BToggleControl = ({ info = "", label = "", className = "", onChange = () => { }, Component = ToggleControl, ...restProps }: BToggleControlProps) => {
+const BToggleControl = ({ info = "", label = "", isNew = false, className = "", onChange = () => { }, Component = ToggleControl, ...restProps }: BToggleControlProps) => {
   return (
     <div className={`mt5 bToggleControl ${className}`}>
       <Component
         className={className}
-        label={<Label info={info} label={label} />}
+        label={<Label info={info} label={label} isNew={isNew} />}
         onChange={onChange}
         {...restProps}
       />
@@ -27,12 +27,16 @@ export default BToggleControl;
 interface LabelProps {
   info?: string;
   label?: string;
+  isNew?: boolean;
 }
 
-export const Label = ({ info = "", label = "" }: LabelProps) => {
+export const NewBadge = () => <span className="h5vp-new-badge">New</span>;
+
+export const Label = ({ info = "", label = "", isNew = false }: LabelProps) => {
   return (
     <>
       {label && <span style={{ marginRight: "5px" }}>{label}</span>}
+      {isNew && <NewBadge />}
       {info && (
         <Tooltip text={info} placement="top">
           <Icon icon="info-outline" size={17} />

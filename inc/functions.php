@@ -20,6 +20,20 @@ if (!function_exists('h5vp_get_option')) {
     }
 }
 
+if (!function_exists('h5vp_new_badge')) {
+    /**
+     * A small green "New" label for the title of a setting added recently, so users can spot it.
+     * Inline style on purpose: it is used in the classic player fields, Quick Player and Elementor, which do not
+     * share a stylesheet.
+     *
+     * @return string HTML (constant markup, safe to print).
+     */
+    function h5vp_new_badge()
+    {
+        return ' <span class="h5vp-new-badge" style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:0;background:#105fda;color:#fff;font-size:10px;font-weight:600;letter-spacing:.5px;line-height:1.5;text-transform:uppercase;vertical-align:middle;">' . esc_html__('New', 'html5-video-player') . '</span>';
+    }
+}
+
 if (!function_exists('h5vp_sanitize_player_url')) {
     /**
      * Reject a player URL whose scheme is not http(s), e.g. javascript: or data:.
@@ -133,7 +147,7 @@ if (!function_exists('h5vp_sanitize_player_options')) {
             'controls', 'settings', 'loadSprite', 'autoplay', 'autopause', 'playsinline', 'seekTime', 'volume', 'muted',
             'hideControls', 'resetOnEnd', 'clickToPlay', 'disableContextMenu', 'invertTime', 'toggleInvert', 'displayDuration',
             'duration', 'tooltips', 'captions', 'ratio', 'storage', 'speed', 'loop', 'ads', 'urls', 'markers', 'preload',
-            'quality', 'fullscreen', 'keyboard', 'imported', 'autoplayNextVideo', 'showPrevNext', 'showSearch',
+            'quality', 'fullscreen', 'keyboard', 'imported', 'autoplayNextVideo', 'showPrevNext', 'showSearch', 'defaultVolume', 'fit',
         );
 
         $clean = array();
@@ -143,6 +157,19 @@ if (!function_exists('h5vp_sanitize_player_options')) {
             }
 
             switch ($key) {
+                case 'defaultVolume':
+                    // Percent 0-100; empty or non-numeric means "not set" (the player's usual start volume).
+                    if (is_numeric($value)) {
+                        $clean[$key] = (int) max(0, min(100, round((float) $value)));
+                    }
+                    break;
+
+                case 'fit':
+                    if (in_array($value, array('contain', 'cover'), true)) {
+                        $clean[$key] = $value;
+                    }
+                    break;
+
                 case 'seekTime':
                     // A null or non-numeric seek time breaks the player's labels; skip it so the default (10) applies.
                     if (is_numeric($value)) {
