@@ -28,6 +28,7 @@ export const dashboardInfo = (info) => {
             org: `https://wordpress.org/plugins/${slug}/`,
             docs: `https://bplugins.com/docs/${slug}/`,
             pricing: `https://bplugins.com/products/${slug}/pricing`,
+			featureRequest: `https://bplugins.com/products/${slug}/roadmap-and-ideas/`
         },
         freemius: {
             product_id: 14259,
@@ -143,7 +144,6 @@ export const welcomeInfo = (adminUrl, editor = '') => ({
             version: '2.14.3 - 17 Nov, 2026',
             type: 'enhancement',
             list: [
-                '<strong>Enhancement:</strong> Added Black Friday promotional banner and campaign notices.',
                 '<strong>Fixed:</strong> Guided setup wizard redirects according to the chosen editor (Shortcode opens classic screen, Gutenberg opens block editor, Elementor opens pages).'
             ]
         },

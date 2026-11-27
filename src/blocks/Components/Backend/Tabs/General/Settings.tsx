@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TextControl, SelectControl, PanelBody } from "@wordpress/components";
+import { TextControl, SelectControl, PanelBody, RangeControl } from "@wordpress/components";
 import { __ } from "@wordpress/i18n";
 
 import isYoutubeURL from "../../../../../../../wp-utils/v1/isYoutubeURL";
@@ -20,7 +20,7 @@ interface SettingsProps {
 
 const Settings = ({ attributes, setAttributes, handleOptions }: SettingsProps) => {
   const { source, provider, options, presetId } = attributes;
-  const { autoplay, muted, hideControls, playsinline, preload, ratio, resetOnEnd, loop, speed } = options;
+  const { autoplay, muted, hideControls, playsinline, preload, ratio, resetOnEnd, loop, speed, defaultVolume, fit } = options;
 
   const [isCustomRatio, setIsCustomRatio] = useState(false);
 
@@ -36,6 +36,24 @@ const Settings = ({ attributes, setAttributes, handleOptions }: SettingsProps) =
       <BToggleControl info={helpText.autoplay} help={autoplay ? __("muted should be enabled", "html5-video-player") : ""} label={__("Autoplay", "html5-video-player")} id="autoplay" checked={autoplay} onChange={() => handleOptions({ autoplay: !autoplay })} />
 
       <BToggleControl info={helpText.muted} label={__("Muted", "html5-video-player")} checked={muted} onChange={() => handleOptions({ muted: !muted })} />
+
+      {!muted && (
+        <div style={{ margin: "14px 0" }}>
+          <BToggleControl
+            info={__("The volume the video starts at, from 0 to 100. Leave empty to keep the default. If Muted is on, the video stays muted.", "html5-video-player")}
+            Component={RangeControl}
+            label={__("Default Volume (%)", "html5-video-player")}
+            isNew
+            value={defaultVolume === "" || defaultVolume === undefined ? undefined : Number(defaultVolume)}
+            min={0}
+            max={100}
+            step={5}
+            allowReset
+            initialPosition={50}
+            onChange={(value: number | undefined) => handleOptions({ defaultVolume: value === undefined ? "" : value })}
+          />
+        </div>
+      )}
 
       <BToggleControl info={helpText.repeat} label={__("Repeat", "html5-video-player")} checked={loop.active} onChange={() => handleOptions({ loop: { ...loop, active: !loop.active } })} />
 
@@ -91,6 +109,22 @@ const Settings = ({ attributes, setAttributes, handleOptions }: SettingsProps) =
           }
         }}
       />
+
+      <div style={{ margin: "14px 0" }}>
+        <BToggleControl
+          info={__("Fit shows the whole video (black bars if the shapes differ). Fill covers the whole frame and crops the edges. It needs a fixed Video Ratio above; with Original there is nothing to crop.", "html5-video-player")}
+          Component={SelectControl}
+          labelPosition="top"
+          value={fit === "cover" ? "cover" : "contain"}
+          label={__("Video Fit", "html5-video-player")}
+          isNew
+          options={[
+            { label: __("Fit (show the whole video)", "html5-video-player"), value: "contain" },
+            { label: __("Fill (crop to the frame)", "html5-video-player"), value: "cover" },
+          ]}
+          onChange={(value: string) => handleOptions({ fit: value })}
+        />
+      </div>
 
       {isCustomRatio && (
         <BToggleControl

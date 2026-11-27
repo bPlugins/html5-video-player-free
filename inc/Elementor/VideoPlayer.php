@@ -318,6 +318,52 @@ class VideoPlayer extends Widget_Base
 		);
 
 		$this->add_control(
+			'default_volume',
+			[
+				'label' => __('Default Volume (%)', 'html5-video-player') . h5vp_new_badge(),
+				'description' => __('The volume the video starts at (0-100). Leave empty for the default. If Muted is on, the video stays muted.', 'html5-video-player'),
+				'type' => Controls_Manager::NUMBER,
+				'min' => 0,
+				'max' => 100,
+				'step' => 5,
+				'separator' => 'before',
+			]
+		);
+
+		$this->add_control(
+			'video_ratio',
+			[
+				'label' => __('Video Ratio', 'html5-video-player') . h5vp_new_badge(),
+				'description' => __('The shape of the player frame. Default keeps the shape the player always had. Pick a ratio to give Video Fit something to crop.', 'html5-video-player'),
+				'type' => Controls_Manager::SELECT,
+				'default' => '',
+				'options' => [
+					'' => __('Default', 'html5-video-player'),
+					'1:1' => __('Square (1:1)', 'html5-video-player'),
+					'4:3' => __('Standard (4:3)', 'html5-video-player'),
+					'16:9' => __('Widescreen (16:9)', 'html5-video-player'),
+					'21:9' => __('Panoramic (21:9)', 'html5-video-player'),
+					'3:4' => __('Portrait (3:4)', 'html5-video-player'),
+					'9:16' => __('Tall (9:16)', 'html5-video-player'),
+				],
+			]
+		);
+
+		$this->add_control(
+			'video_fit',
+			[
+				'label' => __('Video Fit', 'html5-video-player') . h5vp_new_badge(),
+				'description' => __('Fill covers the whole frame and crops the edges instead of showing black bars.', 'html5-video-player'),
+				'type' => Controls_Manager::SELECT,
+				'default' => 'contain',
+				'options' => [
+					'contain' => __('Fit (show the whole video)', 'html5-video-player'),
+					'cover' => __('Fill (crop to the frame)', 'html5-video-player'),
+				],
+			]
+		);
+
+		$this->add_control(
 			'preload',
 			[
 				'label' => __('Preload', 'html5-video-player'),
@@ -627,6 +673,20 @@ class VideoPlayer extends Widget_Base
 			],
 			'ratio' => '16/9',
 		];
+
+		// Opt-in options: widgets saved before these controls existed have neither key, and nothing is added.
+		$default_volume = self::i($s, 'default_volume', '', '');
+		if ('' !== $default_volume && is_numeric($default_volume)) {
+			$options['defaultVolume'] = (int) max(0, min(100, round((float) $default_volume)));
+		}
+		// Opt-in: widgets saved before this control existed have no value, so their shape is unchanged.
+		$video_ratio = self::i($s, 'video_ratio', '', '');
+		if (in_array($video_ratio, ['1:1', '4:3', '16:9', '21:9', '3:4', '9:16'], true)) {
+			$options['ratio'] = $video_ratio;
+		}
+		if ('cover' === self::i($s, 'video_fit', '', 'contain')) {
+			$options['fit'] = 'cover';
+		}
 
 		$width = '100%';
 		if (isset($s['width']['size'], $s['width']['unit']) && '' !== $s['width']['size']) {

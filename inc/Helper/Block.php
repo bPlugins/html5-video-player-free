@@ -115,6 +115,15 @@ class Block
             $block['attrs']['align'] = $align;
         }
 
+        // Opt-in options: players saved before these fields existed have no meta, and then nothing is added.
+        $default_volume = get_post_meta($id, 'h5vp_default_volume', true);
+        if ('' !== $default_volume && is_numeric($default_volume)) {
+            $block['attrs']['options']['defaultVolume'] = (int) max(0, min(100, round((float) $default_volume)));
+        }
+        if ('cover' === get_post_meta($id, 'h5vp_video_fit', true)) {
+            $block['attrs']['options']['fit'] = 'cover';
+        }
+
         return $block;
     }
 
@@ -180,7 +189,11 @@ class Block
                     "muted" => (bool) $get_attr('muted', $quick('h5vp_muted_quick', '0'), true),
                     "hideControls" => $get_attr('hide_controls', $quick('h5vp_auto_hide_control_quick', '1'), true),
                     "resetOnEnd" => $get_attr('reset_on_end', $quick('h5vp_reset_on_end_quick', '1'), true),
-                    "ratio" => $attrs['aspect_ratio'] ?? null, // here is the isssue
+                    // ratio="1:1" (or aspect_ratio): the shape of the frame. Only a plain "a:b" value is accepted.
+                    "ratio" => (function ($value) {
+                        $value = is_string($value) ? trim($value) : '';
+                        return preg_match('/^\d{1,2}[:\/]\d{1,2}$/', $value) ? str_replace('/', ':', $value) : null;
+                    })($attrs['ratio'] ?? $attrs['aspect_ratio'] ?? null),
                     "loop" => [
                         "active" => $get_attr('repeat', $quick('h5vp_repeat_quick', '0'), true),
                     ],
@@ -205,6 +218,15 @@ class Block
         // See classic_to_gutenberg_block(): only set the key once it has a value.
         if ($align !== '') {
             $block['attrs']['align'] = $align;
+        }
+
+        // default_volume="50" (percent). get_attr() treats "0" as empty, so read the attribute directly.
+        if (isset($attrs['default_volume']) && is_numeric($attrs['default_volume'])) {
+            $block['attrs']['options']['defaultVolume'] = (int) max(0, min(100, round((float) $attrs['default_volume'])));
+        }
+        // fit="cover": fill the frame and crop the edges (anything else keeps the whole video visible).
+        if (isset($attrs['fit']) && 'cover' === $attrs['fit']) {
+            $block['attrs']['options']['fit'] = 'cover';
         }
 
         return $block;

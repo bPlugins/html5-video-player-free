@@ -165,6 +165,10 @@ export interface Options {
   playsinline: boolean;
   seekTime: number;
   volume: number;
+  /** Starting volume in percent (0-100); empty keeps the player's usual start volume. */
+  defaultVolume?: number | string;
+  /** "contain" shows the whole video (black bars), "cover" fills the frame and crops. */
+  fit?: "contain" | "cover";
   muted: boolean;
   hideControls: boolean;
   resetOnEnd: boolean;

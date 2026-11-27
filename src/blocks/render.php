@@ -3,6 +3,8 @@ if (!defined('ABSPATH'))
     exit; // Exit if accessed directly
 
 if (!isset($attributes['source']) || empty($attributes['source'])) {
+    // Editors see why the player is empty; visitors still get nothing (escaped inside the helper).
+    echo h5vp_empty_source_notice(!empty($attributes['is_classic'])); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     return;
 }
 $h5vp_attributes = h5vp_process_block_attributes($attributes);

@@ -20,6 +20,20 @@ if (!function_exists('h5vp_get_option')) {
     }
 }
 
+if (!function_exists('h5vp_new_badge')) {
+    /**
+     * A small green "New" label for the title of a setting added recently, so users can spot it.
+     * Inline style on purpose: it is used in the classic player fields, Quick Player and Elementor, which do not
+     * share a stylesheet.
+     *
+     * @return string HTML (constant markup, safe to print).
+     */
+    function h5vp_new_badge()
+    {
+        return ' <span class="h5vp-new-badge" style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:0;background:#105fda;color:#fff;font-size:10px;font-weight:600;letter-spacing:.5px;line-height:1.5;text-transform:uppercase;vertical-align:middle;">' . esc_html__('New', 'html5-video-player') . '</span>';
+    }
+}
+
 if (!function_exists('h5vp_sanitize_player_url')) {
     /**
      * Reject a player URL whose scheme is not http(s), e.g. javascript: or data:.
@@ -133,7 +147,7 @@ if (!function_exists('h5vp_sanitize_player_options')) {
             'controls', 'settings', 'loadSprite', 'autoplay', 'autopause', 'playsinline', 'seekTime', 'volume', 'muted',
             'hideControls', 'resetOnEnd', 'clickToPlay', 'disableContextMenu', 'invertTime', 'toggleInvert', 'displayDuration',
             'duration', 'tooltips', 'captions', 'ratio', 'storage', 'speed', 'loop', 'ads', 'urls', 'markers', 'preload',
-            'quality', 'fullscreen', 'keyboard', 'imported', 'autoplayNextVideo', 'showPrevNext', 'showSearch',
+            'quality', 'fullscreen', 'keyboard', 'imported', 'autoplayNextVideo', 'showPrevNext', 'showSearch', 'defaultVolume', 'fit',
         );
 
         $clean = array();
@@ -143,6 +157,26 @@ if (!function_exists('h5vp_sanitize_player_options')) {
             }
 
             switch ($key) {
+                case 'defaultVolume':
+                    // Percent 0-100; empty or non-numeric means "not set" (the player's usual start volume).
+                    if (is_numeric($value)) {
+                        $clean[$key] = (int) max(0, min(100, round((float) $value)));
+                    }
+                    break;
+
+                case 'fit':
+                    if (in_array($value, array('contain', 'cover'), true)) {
+                        $clean[$key] = $value;
+                    }
+                    break;
+
+                case 'seekTime':
+                    // A null or non-numeric seek time breaks the player's labels; skip it so the default (10) applies.
+                    if (is_numeric($value)) {
+                        $clean[$key] = $value + 0;
+                    }
+                    break;
+
                 case 'controls':
                     $clean[$key] = h5vp_sanitize_player_controls($value);
                     break;
@@ -901,5 +935,34 @@ if (!function_exists('h5vp_register_plyr_alias')) {
         if (wp_style_is('h5vp-plyr', 'registered') && !wp_style_is('bplugins-plyrio', 'registered')) {
             wp_register_style('bplugins-plyrio', false, array('h5vp-plyr'), H5VP_VER);
         }
+    }
+}
+
+if (!function_exists('h5vp_empty_source_notice')) {
+    /**
+     * Placeholder printed in place of a player that has no video source, so an editor previewing the page sees
+     * why it is empty instead of a blank gap. Only users who can edit posts see it; visitors still get nothing,
+     * as before, so a live site never starts showing it to its audience.
+     *
+     * @param bool $is_classic Whether the player comes from the "All Players" screen (vs a block/widget).
+     */
+    function h5vp_empty_source_notice($is_classic = false)
+    {
+        if (!current_user_can('edit_posts')) {
+            return '';
+        }
+
+        $hint = $is_classic
+            ? __('Open this player under Html5 Video Player → All Players and add a video in the Source URL field of the Media tab.', 'html5-video-player')
+            : __('Add a video in the Source URL field of this block or widget\'s settings.', 'html5-video-player');
+
+        $icon = '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.25-3.15A.5.5 0 0 1 22 7.78v8.44"/><path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"/><path d="m2 2 20 20"/></svg>';
+
+        return '<div class="h5vp-empty-source" role="note" style="box-sizing:border-box;width:100%;max-width:560px;margin:0 auto;padding:32px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;background:#1d2327;border:1px dashed rgba(255,255,255,.25);border-radius:8px;color:#fff;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;line-height:1.5;">'
+            . '<span style="color:#00b2ff;display:inline-flex;">' . $icon . '</span>'
+            . '<strong style="font-size:18px;font-weight:600;color:#fff;">' . esc_html__('No video to play yet', 'html5-video-player') . '</strong>'
+            . '<span style="font-size:14px;max-width:480px;color:rgba(255,255,255,.8);">' . esc_html($hint) . '</span>'
+            . '<span style="font-size:12px;color:rgba(255,255,255,.5);">' . esc_html__('Only you and other site editors can see this message.', 'html5-video-player') . '</span>'
+            . '</div>';
     }
 }

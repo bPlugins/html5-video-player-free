@@ -4,6 +4,8 @@ import { EventEmitter } from "bp-utils";
 import { Features, QualityItem, CaptionItem, PlayerConstructorOptions, DeferredEvent, SourceInfo, TrackInfo } from "src/interfaces/MyPlayerInterface";
 import { isIOS } from "src/utils/isIOS";
 import { plainText, safeUrl, sanitizePlayerOptions } from "src/utils/playerSecurity";
+import { watchMediaError } from "src/utils/mediaError";
+import { applyDefaultVolume, applyFit } from "src/utils/playerExtras";
 
 
 // ────────────────────────────────────────────────────────────────
@@ -97,6 +99,8 @@ class MyPlayer extends EventEmitter {
   playOnReady: boolean;
   hls?: any;
   private seekFixBound = false;
+  private destroyed = false;
+  private stopMediaWatch: (() => void) | null = null;
   private globalKeydown: ((e: KeyboardEvent) => void) | null = null;
 
   constructor(media: HTMLVideoElement, attributes: any, config: PlayerConstructorOptions) {
@@ -213,6 +217,9 @@ class MyPlayer extends EventEmitter {
         draft.volume = 0;
         draft.storage = { enabled: false };
       } else {
+        // Plyr builds with the usual 50%. The owner's "Default volume" is applied after Plyr is ready
+        // (applyDefaultVolume) without being saved: a volume given here would be stored as the visitor's own
+        // preference and every other player on the site would start at it.
         draft.volume = 0.5;
         draft.storage = { enabled: true };
       }
@@ -381,6 +388,8 @@ class MyPlayer extends EventEmitter {
     const playsinline = this.options?.playsinline !== false;
 
     this.player = new (getPlyr())(this.media, { ...plyrOpts, playsinline });
+    applyDefaultVolume(this.player, this.options);
+    applyFit(this.player, this.options);
     // Plyr has wrapped the <video> by now, so loading can start without being restarted by the move.
     this.applyPreload();
     this.keepNativeCaptionsHidden();
@@ -469,10 +478,23 @@ class MyPlayer extends EventEmitter {
     });
   }
 
+  /** Explains on the player why a plain video file can't be played, instead of leaving a black box. */
+  private watchMediaErrors(): void {
+    if (this.stopMediaWatch || this.hls) return;
+
+    // YouTube/Vimeo have no <video>; hls.js recovers from many errors on its own.
+    const video = this.player?.media;
+    if (!(video instanceof HTMLVideoElement) || this.isHlsSource(this.source)) return;
+
+    this.stopMediaWatch = watchMediaError(this.player.elements?.container, video, () => this.destroyed);
+  }
+
   /**
    * Fires when the Plyr player emits "ready".
    */
   onReady(): void {
+    this.watchMediaErrors();
+
     // Remove the temporary aspect-ratio from the block container
     const blockContainer = this.player?.elements?.wrapper?.closest(".wp-block-html5-player-video");
     if (blockContainer) {
@@ -931,6 +953,11 @@ class MyPlayer extends EventEmitter {
 
 
   destroy(): void {
+    // First: destroying the player empties its <video>, which the browser reports as an error.
+    this.destroyed = true;
+    this.stopMediaWatch?.();
+    this.stopMediaWatch = null;
+
     if (this.hls) {
       this.hls.destroy();
       this.hls = null;

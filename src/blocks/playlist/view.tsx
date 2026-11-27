@@ -8,6 +8,7 @@ import PlaylistVideoPlayer, {
 import PlaylistSimple from "src/blocks/Components/Common/playlist/PlaylistSimple";
 import "src/playlist.scss";
 import { playMounted, whenNearViewport } from "src/utils/lazyMount";
+import { rescanOnDomChange } from "src/utils/domWatch";
 
 // Support both React 18 createRoot and legacy render
 const renderRoot = (container: HTMLElement, element: React.ReactElement) => {
@@ -156,6 +157,9 @@ if (document.readyState === "loading") {
 } else {
   mountPlaylists();
 }
+
+// Playlists that arrive after the page has loaded (infinite scroll, AJAX, popups, tabs) get set up too.
+rescanOnDomChange(mountPlaylists, ".h5vp_playlist");
 
 window.addEventListener("elementor/frontend/init", () => {
   (window as any).elementorFrontend?.hooks?.addAction(

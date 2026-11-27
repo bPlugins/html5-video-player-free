@@ -207,6 +207,28 @@ class VideoPlayer
                     'placeholder' => '16:9'
                 ),
                 array(
+                    'id' => 'h5vp_video_fit',
+                    'type' => 'select',
+                    'title' => __('Video Fit', 'html5-video-player') . h5vp_new_badge(),
+                    'options' => array(
+                        'contain' => __('Fit (show the whole video)', 'html5-video-player'),
+                        'cover' => __('Fill (crop to the frame)', 'html5-video-player'),
+                    ),
+                    'default' => 'contain',
+                    'desc' => __('Fill covers the whole frame and crops the edges instead of showing black bars. It needs a fixed Ratio above.', 'html5-video-player'),
+                ),
+                array(
+                    'id' => 'h5vp_default_volume',
+                    'type' => 'spinner',
+                    'title' => __('Default Volume', 'html5-video-player') . h5vp_new_badge(),
+                    'dependency' => array('h5vp_muted_playerio', '==', 'false'),
+                    'unit' => '%',
+                    'min' => 0,
+                    'max' => 100,
+                    'step' => 5,
+                    'desc' => __('The volume the video starts at (0-100). Leave empty for the default. If Muted is on, the video stays muted.', 'html5-video-player'),
+                ),
+                array(
                     'id' => 'h5vp_speed',
                     'type' => 'text',
                     'title' => 'Speed',

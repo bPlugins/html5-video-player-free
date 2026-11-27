@@ -77,6 +77,8 @@
         "playsinline": true,
         "seekTime": 10,
         "volume": 1,
+        "defaultVolume": "",
+        "fit": "contain",
         "muted": false,
         "hideControls": true,
         "resetOnEnd": false,
